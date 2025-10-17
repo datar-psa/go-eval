@@ -1,0 +1,50 @@
+HTTP/2.0 200 OK
+Alt-Svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+Content-Type: application/json; charset=UTF-8
+Date: Fri, 17 Oct 2025 23:26:19 GMT
+Server: scaffolding on HTTPServer2
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "candidates": [
+    {
+      "content": {
+        "role": "model",
+        "parts": [
+          {
+            "text": "Step-by-step evaluation:\n1.  **Identify the key facts in the expected answer:** The expected answer states that the capital of France is Paris.\n2.  **Check if these facts are present in the actual output:** The actual output is \"London\". This fact (\"Paris\") is not present.\n3.  **Check if there are any contradicting facts in the actual output:** The actual output \"London\" contradicts the expected answer. London is not the capital of France; Paris is.\n\nThe actual output provides an incorrect capital city for France, making it factually inconsistent and completely wrong.\n\nSCORE: 0"
+          }
+        ]
+      },
+      "finishReason": "STOP",
+      "avgLogprobs": -0.3527945598573175
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 184,
+    "candidatesTokenCount": 131,
+    "totalTokenCount": 459,
+    "trafficType": "ON_DEMAND",
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 184
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 131
+      }
+    ],
+    "thoughtsTokenCount": 144
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "createTime": "2025-10-17T23:26:18.112830Z",
+  "responseId": "mtDyaL7xBuOZqsMP8ObAyAw"
+}
