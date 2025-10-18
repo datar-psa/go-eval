@@ -62,6 +62,64 @@ func NewHypertClient(t *testing.T, config HypertClientConfig) *http.Client {
 	return hypertClient
 }
 
+// quotaProjectTransport wraps an http.RoundTripper to add quota project header
+type quotaProjectTransport struct {
+	base      http.RoundTripper
+	projectID string
+}
+
+func (t *quotaProjectTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	// Add quota project header
+	req.Header.Set("X-Goog-User-Project", t.projectID)
+	return t.base.RoundTrip(req)
+}
+
+// NewAuthenticatedHypertClient creates a new hypert client with OAuth2 authentication and quota project
+// This is useful for Google Cloud APIs that require quota project to be set
+func NewAuthenticatedHypertClient(t *testing.T, config HypertClientConfig, projectID string) *http.Client {
+	testDataDir := config.TestDataDir
+	if config.SubDir != "" {
+		testDataDir = filepath.Join(testDataDir, config.SubDir)
+	}
+
+	namingScheme, err := hypert.NewContentHashNamingScheme(testDataDir)
+	if err != nil {
+		t.Fatalf("failed to create naming scheme: %v", err)
+	}
+
+	hypertClient := hypert.TestClient(t, ShouldUpdate(),
+		hypert.WithNamingScheme(namingScheme),
+		hypert.WithRequestValidator(hypert.ComposedRequestValidator(
+			hypert.PathValidator(),
+			hypert.QueryParamsValidator(),
+			hypert.MethodValidator(),
+		)),
+	)
+
+	// If we're in record mode, wrap with OAuth2 authentication and set quota project
+	if ShouldUpdate() {
+		ctx := context.Background()
+		creds, err := google.FindDefaultCredentials(ctx)
+		if err != nil {
+			t.Fatalf("failed to get default credentials: %v", err)
+		}
+
+		// Create OAuth2 client
+		oauth2Client := oauth2.NewClient(context.WithValue(ctx, oauth2.HTTPClient, hypertClient), creds.TokenSource)
+
+		// Wrap the client to add quota project header
+		return &http.Client{
+			Transport: &quotaProjectTransport{
+				base:      oauth2Client.Transport,
+				projectID: projectID,
+			},
+			Timeout: oauth2Client.Timeout,
+		}
+	}
+
+	return hypertClient
+}
+
 // GeminiTestConfig configures Gemini client creation for tests
 type GeminiTestConfig struct {
 	Project  string

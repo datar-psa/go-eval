@@ -4,9 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/datar-psa/go-eval/interfaces"
 	"google.golang.org/genai"
-
-	goeval "github.com/datar-psa/go-eval"
 )
 
 // Embedder wraps a genai.Client to implement the Embedder interface
@@ -61,5 +60,5 @@ func (e *Embedder) Embed(ctx context.Context, text string) ([]float64, error) {
 	return embedding, nil
 }
 
-// Verify that Embedder implements goeval.Embedder
-var _ goeval.Embedder = (*Embedder)(nil)
+// Verify that Embedder implements interfaces.Embedder
+var _ interfaces.Embedder = (*Embedder)(nil)

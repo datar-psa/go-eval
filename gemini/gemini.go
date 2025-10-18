@@ -4,9 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/datar-psa/go-eval/interfaces"
 	"google.golang.org/genai"
-
-	goeval "github.com/datar-psa/go-eval"
 )
 
 // Generator wraps a genai.Client to implement the LLMGenerator interface
@@ -56,4 +55,4 @@ func (g *Generator) Generate(ctx context.Context, prompt string) (string, error)
 }
 
 // Verify that Generator implements LLMGenerator
-var _ goeval.LLMGenerator = (*Generator)(nil)
+var _ interfaces.LLMGenerator = (*Generator)(nil)

@@ -56,6 +56,8 @@ Sophisticated evaluations using language models as judges.
 | Scorer | Description |
 |--------|-------------|
 | `Factuality` | Evaluates factual consistency using chain-of-thought reasoning |
+| `ToneRubric` | Evaluates professionalism, kindness, clarity, and helpfulness using rubric-based scoring |
+| `Moderation` | Evaluates content safety using moderation providers (e.g., Google Cloud Natural Language API) |
 
 **Example:**
 ```go
@@ -66,6 +68,27 @@ import (
 
 llmGen := gemini.NewGenerator(genaiClient, "publishers/google/models/gemini-2.5-flash")
 scorer := llmjudge.Factuality(llmjudge.FactualityOptions{LLM: llmGen})
+```
+
+**ToneRubric Example:**
+```go
+import (
+    "github.com/datar-psa/go-eval/llmjudge"
+    "github.com/datar-psa/go-eval/gemini"
+)
+
+llmGen := gemini.NewGenerator(genaiClient, "publishers/google/models/gemini-2.5-flash")
+scorer := llmjudge.ToneRubric(llmjudge.ToneRubricOptions{
+    LLM:                   llmGen,
+    ProfessionalismWeight: 0.6, // Optional, defaults to 0.5 if both are 0
+    KindnessWeight:        0.4, // Optional, defaults to 0.5 if both are 0
+    // Note: If one weight is 0, that dimension is excluded from scoring
+})
+
+result := scorer.Score(ctx, "customer complaint", "I understand your frustration...", "")
+// result.Score = weighted composite (0.0-1.0)
+// result.Metadata["professionalism.choice"] = "D" (A-E)
+// result.Metadata["kindness.choice"] = "E" (A-E)
 ```
 
 ### Embedding Evaluations
@@ -137,6 +160,51 @@ For checking if an answer is factually correct, use **Factuality**:
 llm := gemini.NewGenerator(client, "publishers/google/models/gemini-2.5-flash")
 scorer := llmjudge.Factuality(llmjudge.FactualityOptions{LLM: llm})
 ```
+
+### Response Tone
+For evaluating the professionalism, kindness, clarity, and helpfulness of responses, use **ToneRubric**:
+
+```go
+llm := gemini.NewGenerator(client, "publishers/google/models/gemini-2.5-flash")
+scorer := llmjudge.ToneRubric(llmjudge.ToneRubricOptions{
+    LLM:     llm,
+    Weights: [4]float64{0.3, 0.2, 0.3, 0.2}, // [professionalism, kindness, clarity, helpfulness]
+})
+
+// Single dimension scoring examples:
+// Professionalism only:
+scorer := llmjudge.ToneRubric(llmjudge.ToneRubricOptions{
+    LLM:     llm,
+    Weights: [4]float64{1.0, 0.0, 0.0, 0.0}, // Only professionalism matters
+})
+
+// Kindness only:
+scorer := llmjudge.ToneRubric(llmjudge.ToneRubricOptions{
+    LLM:     llm,
+    Weights: [4]float64{0.0, 1.0, 0.0, 0.0}, // Only kindness matters
+})
+```
+
+### Content Safety
+For evaluating the safety and appropriateness of content, use **Moderation**:
+
+```go
+import (
+    "github.com/datar-psa/go-eval/gemini"
+    "net/http"
+)
+
+provider := gemini.NewGoogleCloudProvider(gemini.GoogleCloudOptions{
+    HTTPClient: http.DefaultClient,
+    ProjectID:  "your-project-id", // or use APIKey instead
+})
+
+scorer := llmjudge.Moderation(llmjudge.ModerationOptions{
+    ModerationProvider: provider,
+    Threshold:          0.5, // Adjust based on your safety requirements
+})
+```
+
 
 ## Running Tests
 

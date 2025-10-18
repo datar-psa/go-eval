@@ -4,16 +4,15 @@ import (
 	"context"
 	"fmt"
 	"regexp"
-	"strconv"
-	"strings"
 
 	goeval "github.com/datar-psa/go-eval"
+	"github.com/datar-psa/go-eval/interfaces"
 )
 
 // FactualityOptions configures the Factuality scorer
 type FactualityOptions struct {
 	// LLM is the language model generator to use for evaluation
-	LLM goeval.LLMGenerator
+	LLM interfaces.LLMGenerator
 }
 
 // Factuality returns a scorer that uses an LLM to evaluate if the output is factually consistent with the expected answer
@@ -26,26 +25,26 @@ type factualityScorer struct {
 	opts FactualityOptions
 }
 
-const factualityPromptTemplate = `You are evaluating the factual accuracy of an AI assistant's answer.
+const factualityPromptTemplate = `You are comparing a submitted answer to an expert answer on a given question. Here is the data:
+[BEGIN DATA]
+************
+[Question]: %s
+************
+[Expert]: %s
+************
+[Submission]: %s
+************
+[END DATA]
 
-Input: %s
-Expected Answer: %s
-Actual Output: %s
+Compare the factual content of the submitted answer with the expert answer. Ignore any differences in style, grammar, or punctuation.
+The submitted answer may either be a subset or superset of the expert answer, or it may conflict with it. Determine which case applies. Answer the question by selecting one of the following options:
+(A) The submitted answer is a subset of the expert answer and is fully consistent with it.
+(B) The submitted answer is a superset of the expert answer and is fully consistent with it.
+(C) The submitted answer contains all the same details as the expert answer.
+(D) There is a disagreement between the submitted answer and the expert answer.
+(E) The answers differ, but these differences don't matter from the perspective of factuality.
 
-Please evaluate if the actual output is factually consistent with the expected answer.
-Consider the output correct if it conveys the same core facts, even if wording differs.
-
-Think step by step:
-1. Identify the key facts in the expected answer
-2. Check if these facts are present in the actual output
-3. Check if there are any contradicting facts in the actual output
-
-Then provide your final answer as a score from 0 to 10, where:
-- 0 = completely wrong or contradictory
-- 5 = partially correct
-- 10 = fully correct and factually consistent
-
-End your response with: "SCORE: X" where X is a number from 0 to 10.`
+Answer with just the letter (A, B, C, D, or E).`
 
 func (s *factualityScorer) Score(ctx context.Context, input, output, expected string) goeval.Score {
 	result := goeval.Score{
@@ -74,48 +73,42 @@ func (s *factualityScorer) Score(ctx context.Context, input, output, expected st
 		return result
 	}
 
-	// Extract score from response
-	score, reasoning, err := extractScore(response)
+	// Extract choice from response
+	choice, err := extractChoice(response)
 	if err != nil {
-		result.Error = fmt.Errorf("failed to extract score: %w", err)
+		result.Error = fmt.Errorf("failed to extract choice: %w", err)
 		result.Score = 0
 		result.Metadata["raw_response"] = response
 		return result
 	}
 
-	// Normalize score from 0-10 to 0-1
-	result.Score = float64(score) / 10.0
-	result.Metadata["raw_score"] = score
-	result.Metadata["reasoning"] = reasoning
+	// Map choice to score based on Braintrust scoring
+	choiceScores := map[string]float64{
+		"A": 0.4, // subset and consistent
+		"B": 0.6, // superset and consistent
+		"C": 1.0, // same details
+		"D": 0.0, // disagreement
+		"E": 1.0, // differences don't matter
+	}
+
+	result.Score = choiceScores[choice]
+	result.Metadata["choice"] = choice
 	result.Metadata["raw_response"] = response
 
 	return result
 }
 
-// extractScore extracts the score from the LLM response
-// Returns the score (0-10), reasoning, and any error
-func extractScore(response string) (int, string, error) {
-	// Look for "SCORE: X" pattern
-	scoreRegex := regexp.MustCompile(`SCORE:\s*(\d+)`)
-	matches := scoreRegex.FindStringSubmatch(response)
+// extractChoice extracts the choice from the LLM response
+// Returns the choice (A, B, C, D, or E) and any error
+func extractChoice(response string) (string, error) {
+	// Look for single letter choices
+	choiceRegex := regexp.MustCompile(`\b([ABCDE])\b`)
+	matches := choiceRegex.FindStringSubmatch(response)
 
 	if len(matches) < 2 {
-		return 0, "", fmt.Errorf("could not find SCORE pattern in response")
+		return "", fmt.Errorf("could not find valid choice (A, B, C, D, or E) in response")
 	}
 
-	score, err := strconv.Atoi(matches[1])
-	if err != nil {
-		return 0, "", fmt.Errorf("invalid score value: %w", err)
-	}
-
-	if score < 0 || score > 10 {
-		return 0, "", fmt.Errorf("score out of range: %d", score)
-	}
-
-	// Extract reasoning (everything before the SCORE line)
-	scoreLine := matches[0]
-	scoreIndex := strings.Index(response, scoreLine)
-	reasoning := strings.TrimSpace(response[:scoreIndex])
-
-	return score, reasoning, nil
+	choice := matches[1]
+	return choice, nil
 }

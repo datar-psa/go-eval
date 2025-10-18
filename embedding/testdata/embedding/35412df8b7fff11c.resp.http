@@ -1,7 +1,7 @@
 HTTP/2.0 200 OK
 Alt-Svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
 Content-Type: application/json; charset=UTF-8
-Date: Fri, 17 Oct 2025 23:26:18 GMT
+Date: Sat, 18 Oct 2025 12:26:57 GMT
 Server: scaffolding on HTTPServer2
 Vary: Origin
 Vary: X-Origin
@@ -14,10 +14,6 @@ X-Xss-Protection: 0
   "predictions": [
     {
       "embeddings": {
-        "statistics": {
-          "truncated": false,
-          "token_count": 6
-        },
         "values": [
           -0.022979293018579483,
           -0.039238758385181427,
@@ -787,7 +783,11 @@ X-Xss-Protection: 0
           -0.011104157194495201,
           -0.072244003415107727,
           -0.064329788088798523
-        ]
+        ],
+        "statistics": {
+          "token_count": 6,
+          "truncated": false
+        }
       }
     }
   ],

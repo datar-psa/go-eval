@@ -1,0 +1,80 @@
+HTTP/2.0 200 OK
+Alt-Svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+Content-Type: application/json; charset=UTF-8
+Date: Sat, 18 Oct 2025 12:27:40 GMT
+Server: scaffolding on HTTPServer2
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "moderationCategories": [
+    {
+      "name": "Toxic",
+      "confidence": 0.7610949
+    },
+    {
+      "name": "Insult",
+      "confidence": 0.8394586
+    },
+    {
+      "name": "Profanity",
+      "confidence": 0.09659339
+    },
+    {
+      "name": "Derogatory",
+      "confidence": 0.018460643
+    },
+    {
+      "name": "Sexual",
+      "confidence": 0.0090325875
+    },
+    {
+      "name": "Death, Harm & Tragedy",
+      "confidence": 0.35789475
+    },
+    {
+      "name": "Violent",
+      "confidence": 0.9956522
+    },
+    {
+      "name": "Firearms & Weapons",
+      "confidence": 0.10526316
+    },
+    {
+      "name": "Public Safety",
+      "confidence": 0.010695187
+    },
+    {
+      "name": "Health",
+      "confidence": 0.09630459
+    },
+    {
+      "name": "Religion & Belief",
+      "confidence": 0.35227272
+    },
+    {
+      "name": "Illicit Drugs",
+      "confidence": 0.057377048
+    },
+    {
+      "name": "War & Conflict",
+      "confidence": 0.010416667
+    },
+    {
+      "name": "Politics",
+      "confidence": 0.030905077
+    },
+    {
+      "name": "Finance",
+      "confidence": 0.08196721
+    },
+    {
+      "name": "Legal",
+      "confidence": 0.100946374
+    }
+  ]
+}

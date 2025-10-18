@@ -1,4 +1,4 @@
-package goeval
+package interfaces
 
 import "context"
 
@@ -8,4 +8,3 @@ type Embedder interface {
 	// Returns a normalized vector (length = 1) suitable for cosine similarity
 	Embed(ctx context.Context, text string) ([]float64, error)
 }
-

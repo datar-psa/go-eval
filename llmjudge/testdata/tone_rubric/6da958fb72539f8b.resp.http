@@ -1,0 +1,50 @@
+HTTP/2.0 200 OK
+Alt-Svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+Content-Type: application/json; charset=UTF-8
+Date: Sat, 18 Oct 2025 10:04:56 GMT
+Server: scaffolding on HTTPServer2
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "candidates": [
+    {
+      "content": {
+        "role": "model",
+        "parts": [
+          {
+            "text": "PROFESSIONALISM: A\nKINDNESS: A"
+          }
+        ]
+      },
+      "finishReason": "STOP",
+      "avgLogprobs": -11.606853061252171
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 179,
+    "candidatesTokenCount": 9,
+    "totalTokenCount": 578,
+    "trafficType": "ON_DEMAND",
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 179
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 9
+      }
+    ],
+    "thoughtsTokenCount": 390
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "createTime": "2025-10-18T10:04:52.537042Z",
+  "responseId": "RGbzaNLjIMugmecPn4qbqAk"
+}

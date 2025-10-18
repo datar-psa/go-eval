@@ -33,7 +33,7 @@ func TestFactuality_Unit(t *testing.T) {
 		expected     string
 		wantErr      error
 		wantScore    float64
-		wantRawScore int
+		wantRawScore float64
 	}{
 		{
 			name: "fully correct",
@@ -42,12 +42,12 @@ func TestFactuality_Unit(t *testing.T) {
 2. The actual output also states Paris is the capital of France
 3. There are no contradictions
 
-SCORE: 10`,
+C`,
 			input:        "What is the capital of France?",
 			output:       "Paris is the capital of France",
 			expected:     "Paris",
 			wantScore:    1.0,
-			wantRawScore: 10,
+			wantRawScore: 1.0,
 		},
 		{
 			name: "partially correct",
@@ -56,12 +56,12 @@ SCORE: 10`,
 2. The actual output says approximately 4
 3. This is close but not exact
 
-SCORE: 7`,
+A`,
 			input:        "What is 2+2?",
 			output:       "approximately 4",
 			expected:     "4",
-			wantScore:    0.7,
-			wantRawScore: 7,
+			wantScore:    0.4,
+			wantRawScore: 0.4,
 		},
 		{
 			name: "completely wrong",
@@ -70,12 +70,12 @@ SCORE: 7`,
 2. The actual output says Paris
 3. This is completely wrong
 
-SCORE: 0`,
+D`,
 			input:        "What is the capital of England?",
 			output:       "Paris",
 			expected:     "London",
 			wantScore:    0.0,
-			wantRawScore: 0,
+			wantRawScore: 0.0,
 		},
 		{
 			name:      "no expected value",
@@ -132,8 +132,8 @@ SCORE: 0`,
 			}
 
 			if tt.wantRawScore > 0 {
-				if rawScore, ok := result.Metadata["raw_score"].(int); !ok || rawScore != tt.wantRawScore {
-					t.Errorf("Factuality.Score() raw_score = %v, want %v", rawScore, tt.wantRawScore)
+				if rawScore, ok := result.Metadata["choice"].(string); !ok || rawScore == "" {
+					t.Errorf("Factuality.Score() choice = %v, want non-empty", rawScore)
 				}
 			}
 
@@ -159,69 +159,62 @@ func TestFactuality_NoLLM(t *testing.T) {
 	}
 }
 
-func TestExtractScore(t *testing.T) {
+func TestExtractChoice(t *testing.T) {
 	tests := []struct {
-		name          string
-		response      string
-		wantScore     int
-		wantReasonLen int
-		wantErr       bool
+		name       string
+		response   string
+		wantChoice string
+		wantErr    bool
 	}{
 		{
-			name: "valid score at end",
-			response: `Here is my reasoning:
-1. First point
-2. Second point
-
-SCORE: 8`,
-			wantScore:     8,
-			wantReasonLen: 40,
+			name:       "valid choice A",
+			response:   "The submitted answer is a subset of the expert answer and is fully consistent with it. A",
+			wantChoice: "A",
 		},
 		{
-			name: "score with whitespace",
-			response: `Reasoning here
-
-SCORE:    5`,
-			wantScore:     5,
-			wantReasonLen: 10,
+			name:       "valid choice B",
+			response:   "This is a superset answer. B",
+			wantChoice: "B",
 		},
 		{
-			name:     "no score",
-			response: "Just some text without a score",
+			name:       "valid choice C",
+			response:   "Same details. C",
+			wantChoice: "C",
+		},
+		{
+			name:       "valid choice D",
+			response:   "There is disagreement. D",
+			wantChoice: "D",
+		},
+		{
+			name:       "valid choice E",
+			response:   "Differences don't matter. E",
+			wantChoice: "E",
+		},
+		{
+			name:     "no choice",
+			response: "Just some text without a choice",
 			wantErr:  true,
 		},
 		{
-			name:     "invalid score value",
-			response: "SCORE: abc",
-			wantErr:  true,
-		},
-		{
-			name:     "score out of range high",
-			response: "SCORE: 15",
-			wantErr:  true,
-		},
-		{
-			name:     "score out of range low",
-			response: "SCORE: -1",
+			name:     "invalid choice",
+			response: "This is choice F",
 			wantErr:  true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			score, reasoning, err := extractScore(tt.response)
+			choice, err := extractChoice(tt.response)
 
 			if (err != nil) != tt.wantErr {
-				t.Errorf("extractScore() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("extractChoice() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
 			if !tt.wantErr {
-				if score != tt.wantScore {
-					t.Errorf("extractScore() score = %v, want %v", score, tt.wantScore)
-				}
-				if len(reasoning) < tt.wantReasonLen {
-					t.Errorf("extractScore() reasoning length = %v, want at least %v", len(reasoning), tt.wantReasonLen)
+				if choice != tt.wantChoice {
+					t.Errorf("extractChoice() choice = %v, want %v", choice, tt.wantChoice)
 				}
 			}
 		})

@@ -6,12 +6,13 @@ import (
 	"math"
 
 	goeval "github.com/datar-psa/go-eval"
+	"github.com/datar-psa/go-eval/interfaces"
 )
 
 // EmbeddingSimilarityOptions configures the EmbeddingSimilarity scorer
 type EmbeddingSimilarityOptions struct {
 	// Embedder is used to generate embeddings for text
-	Embedder goeval.Embedder
+	Embedder interfaces.Embedder
 }
 
 // EmbeddingSimilarity returns a scorer that measures semantic similarity using embeddings
