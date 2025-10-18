@@ -10,8 +10,6 @@ import (
 
 // ModerationOptions configures the Moderation scorer
 type ModerationOptions struct {
-	// ModerationProvider is the moderation service to use
-	ModerationProvider interfaces.ModerationProvider
 	// Threshold is the confidence threshold for flagging content (0.0-1.0)
 	Threshold float64
 	// Categories to check for moderation (empty = all categories)
@@ -20,34 +18,35 @@ type ModerationOptions struct {
 
 // Moderation returns a scorer that evaluates content safety using a moderation provider
 // Returns 1.0 for safe content, 0.0 for unsafe content
-func Moderation(opts ModerationOptions) goeval.Scorer {
-	return &moderationScorer{opts: opts}
+func Moderation(provider interfaces.ModerationProvider, opts ModerationOptions) goeval.Scorer {
+	return &moderationScorer{
+		opts:     opts,
+		provider: provider,
+	}
 }
 
 type moderationScorer struct {
-	opts ModerationOptions
+	opts     ModerationOptions
+	provider interfaces.ModerationProvider
 }
 
-func (s *moderationScorer) Score(ctx context.Context, input, output, expected string) goeval.Score {
+func (s *moderationScorer) Score(ctx context.Context, in goeval.ScoreInputs) goeval.Score {
 	result := goeval.Score{
 		Name:     "Moderation",
 		Metadata: make(map[string]any),
 	}
 
-	if s.opts.ModerationProvider == nil {
+	if s.provider == nil {
 		result.Error = fmt.Errorf("moderation provider is required")
 		result.Score = 0
 		return result
 	}
 
 	// Use output as the content to moderate
-	content := output
-	if content == "" {
-		content = input
-	}
+	content := in.Output
 
 	// Call moderation provider
-	moderationResp, err := s.opts.ModerationProvider.Moderate(ctx, content)
+	moderationResp, err := s.provider.Moderate(ctx, content)
 	if err != nil {
 		result.Error = fmt.Errorf("failed to moderate content: %w", err)
 		result.Score = 0

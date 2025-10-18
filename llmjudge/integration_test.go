@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	goeval "github.com/datar-psa/go-eval"
 	"github.com/datar-psa/go-eval/gemini"
 	"github.com/datar-psa/go-eval/internal/testutils"
 )
@@ -65,8 +66,8 @@ func TestFactuality_Integration(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			scorer := Factuality(FactualityOptions{LLM: llmGen})
-			result := scorer.Score(ctx, tt.input, tt.output, tt.expected)
+			scorer := Factuality(llmGen, FactualityOptions{})
+			result := scorer.Score(ctx, goeval.ScoreInputs{Input: tt.input, Output: tt.output, Expected: tt.expected})
 
 			if result.Error != nil {
 				t.Fatalf("Factuality.Score() unexpected error = %v", result.Error)
@@ -189,11 +190,10 @@ func TestToneRubric_Integration(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			scorer := ToneRubric(ToneRubricOptions{
-				LLM:     llmGen,
+			scorer := ToneRubric(llmGen, ToneRubricOptions{
 				Weights: [4]float64{tt.professionalismWeight, tt.kindnessWeight, 0.0, 0.0},
 			})
-			result := scorer.Score(ctx, tt.input, tt.output, tt.expected)
+			result := scorer.Score(ctx, goeval.ScoreInputs{Input: tt.input, Output: tt.output, Expected: tt.expected})
 
 			if result.Error != nil {
 				t.Fatalf("ToneRubric.Score() unexpected error = %v", result.Error)
@@ -329,12 +329,11 @@ func TestModeration_Integration(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			scorer := Moderation(ModerationOptions{
-				ModerationProvider: provider,
-				Threshold:          tt.threshold,
-				Categories:         tt.categories,
+			scorer := Moderation(provider, ModerationOptions{
+				Threshold:  tt.threshold,
+				Categories: tt.categories,
 			})
-			result := scorer.Score(ctx, tt.input, tt.output, tt.expected)
+			result := scorer.Score(ctx, goeval.ScoreInputs{Output: tt.output, Expected: tt.expected})
 
 			if result.Error != nil {
 				t.Fatalf("Moderation.Score() unexpected error = %v", result.Error)

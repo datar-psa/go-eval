@@ -11,47 +11,50 @@ import (
 
 // EmbeddingSimilarityOptions configures the EmbeddingSimilarity scorer
 type EmbeddingSimilarityOptions struct {
-	// Embedder is used to generate embeddings for text
-	Embedder interfaces.Embedder
+	// Additional configuration options can be added here
 }
 
 // EmbeddingSimilarity returns a scorer that measures semantic similarity using embeddings
 // It computes cosine similarity between the output and expected text embeddings
-func EmbeddingSimilarity(opts EmbeddingSimilarityOptions) goeval.Scorer {
-	return &embeddingSimilarityScorer{opts: opts}
+func EmbeddingSimilarity(embedder interfaces.Embedder, opts EmbeddingSimilarityOptions) goeval.Scorer {
+	return &embeddingSimilarityScorer{
+		opts:     opts,
+		embedder: embedder,
+	}
 }
 
 type embeddingSimilarityScorer struct {
-	opts EmbeddingSimilarityOptions
+	opts     EmbeddingSimilarityOptions
+	embedder interfaces.Embedder
 }
 
-func (s *embeddingSimilarityScorer) Score(ctx context.Context, input, output, expected string) goeval.Score {
+func (s *embeddingSimilarityScorer) Score(ctx context.Context, in goeval.ScoreInputs) goeval.Score {
 	result := goeval.Score{
 		Name:     "EmbeddingSimilarity",
 		Metadata: make(map[string]any),
 	}
 
-	if expected == "" {
+	if in.Expected == "" {
 		result.Error = goeval.ErrNoExpectedValue
 		result.Score = 0
 		return result
 	}
 
-	if s.opts.Embedder == nil {
+	if s.embedder == nil {
 		result.Error = fmt.Errorf("embedder is required")
 		result.Score = 0
 		return result
 	}
 
 	// Generate embeddings
-	outputEmbed, err := s.opts.Embedder.Embed(ctx, output)
+	outputEmbed, err := s.embedder.Embed(ctx, in.Output)
 	if err != nil {
 		result.Error = fmt.Errorf("failed to embed output: %w", err)
 		result.Score = 0
 		return result
 	}
 
-	expectedEmbed, err := s.opts.Embedder.Embed(ctx, expected)
+	expectedEmbed, err := s.embedder.Embed(ctx, in.Expected)
 	if err != nil {
 		result.Error = fmt.Errorf("failed to embed expected: %w", err)
 		result.Score = 0

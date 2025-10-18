@@ -11,18 +11,21 @@ import (
 
 // FactualityOptions configures the Factuality scorer
 type FactualityOptions struct {
-	// LLM is the language model generator to use for evaluation
-	LLM interfaces.LLMGenerator
+	// Additional configuration options can be added here
 }
 
 // Factuality returns a scorer that uses an LLM to evaluate if the output is factually consistent with the expected answer
 // This scorer uses chain-of-thought reasoning to determine factuality
-func Factuality(opts FactualityOptions) goeval.Scorer {
-	return &factualityScorer{opts: opts}
+func Factuality(llm interfaces.LLMGenerator, opts FactualityOptions) goeval.Scorer {
+	return &factualityScorer{
+		opts: opts,
+		llm:  llm,
+	}
 }
 
 type factualityScorer struct {
 	opts FactualityOptions
+	llm  interfaces.LLMGenerator
 }
 
 const factualityPromptTemplate = `You are comparing a submitted answer to an expert answer on a given question. Here is the data:
@@ -46,27 +49,27 @@ The submitted answer may either be a subset or superset of the expert answer, or
 
 Answer with just the letter (A, B, C, D, or E).`
 
-func (s *factualityScorer) Score(ctx context.Context, input, output, expected string) goeval.Score {
+func (s *factualityScorer) Score(ctx context.Context, in goeval.ScoreInputs) goeval.Score {
 	result := goeval.Score{
 		Name:     "Factuality",
 		Metadata: make(map[string]any),
 	}
 
-	if expected == "" {
+	if in.Expected == "" {
 		result.Error = goeval.ErrNoExpectedValue
 		result.Score = 0
 		return result
 	}
 
-	if s.opts.LLM == nil {
+	if s.llm == nil {
 		result.Error = fmt.Errorf("LLM generator is required")
 		result.Score = 0
 		return result
 	}
 
-	prompt := fmt.Sprintf(factualityPromptTemplate, input, expected, output)
+	prompt := fmt.Sprintf(factualityPromptTemplate, in.Input, in.Expected, in.Output)
 
-	response, err := s.opts.LLM.Generate(ctx, prompt)
+	response, err := s.llm.Generate(ctx, prompt)
 	if err != nil {
 		result.Error = fmt.Errorf("%w: %v", goeval.ErrLLMGenerationFailed, err)
 		result.Score = 0

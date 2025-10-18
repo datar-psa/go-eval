@@ -108,11 +108,9 @@ func TestEmbeddingSimilarity_Unit(t *testing.T) {
 				err:        tt.embedErr,
 			}
 
-			scorer := EmbeddingSimilarity(EmbeddingSimilarityOptions{
-				Embedder: mockEmbed,
-			})
+			scorer := EmbeddingSimilarity(mockEmbed, EmbeddingSimilarityOptions{})
 
-			result := scorer.Score(ctx, tt.input, tt.output, tt.expected)
+			result := scorer.Score(ctx, goeval.ScoreInputs{Output: tt.output, Expected: tt.expected})
 
 			if tt.wantErr != nil {
 				if result.Error != tt.wantErr {
@@ -142,8 +140,8 @@ func TestEmbeddingSimilarity_Unit(t *testing.T) {
 func TestEmbeddingSimilarity_NoEmbedder(t *testing.T) {
 	ctx := context.Background()
 
-	scorer := EmbeddingSimilarity(EmbeddingSimilarityOptions{})
-	result := scorer.Score(ctx, "input", "output", "expected")
+	scorer := EmbeddingSimilarity(nil, EmbeddingSimilarityOptions{})
+	result := scorer.Score(ctx, goeval.ScoreInputs{Output: "output", Expected: "expected"})
 
 	if result.Error == nil {
 		t.Error("EmbeddingSimilarity.Score() expected error when Embedder is nil")

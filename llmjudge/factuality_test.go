@@ -110,8 +110,8 @@ D`,
 				err:      tt.llmErr,
 			}
 
-			scorer := Factuality(FactualityOptions{LLM: mockLLM})
-			result := scorer.Score(ctx, tt.input, tt.output, tt.expected)
+			scorer := Factuality(mockLLM, FactualityOptions{})
+			result := scorer.Score(ctx, goeval.ScoreInputs{Input: tt.input, Output: tt.output, Expected: tt.expected})
 
 			if tt.wantErr != nil {
 				if result.Error != tt.wantErr {
@@ -147,8 +147,8 @@ D`,
 func TestFactuality_NoLLM(t *testing.T) {
 	ctx := context.Background()
 
-	scorer := Factuality(FactualityOptions{})
-	result := scorer.Score(ctx, "input", "output", "expected")
+	scorer := Factuality(nil, FactualityOptions{})
+	result := scorer.Score(ctx, goeval.ScoreInputs{Input: "input", Output: "output", Expected: "expected"})
 
 	if result.Error == nil {
 		t.Error("Factuality.Score() expected error when LLM is nil")

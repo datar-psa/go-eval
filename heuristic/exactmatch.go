@@ -24,20 +24,20 @@ type exactMatchScorer struct {
 	opts ExactMatchOptions
 }
 
-func (s *exactMatchScorer) Score(ctx context.Context, input, output, expected string) goeval.Score {
+func (s *exactMatchScorer) Score(ctx context.Context, in goeval.ScoreInputs) goeval.Score {
 	result := goeval.Score{
 		Name:     "ExactMatch",
 		Metadata: make(map[string]any),
 	}
 
-	if expected == "" {
+	if in.Expected == "" {
 		result.Error = goeval.ErrNoExpectedValue
 		result.Score = 0
 		return result
 	}
 
-	outputToCompare := output
-	expectedToCompare := expected
+	outputToCompare := in.Output
+	expectedToCompare := in.Expected
 
 	if s.opts.TrimWhitespace {
 		outputToCompare = strings.TrimSpace(outputToCompare)
@@ -57,8 +57,8 @@ func (s *exactMatchScorer) Score(ctx context.Context, input, output, expected st
 
 	result.Metadata["case_insensitive"] = s.opts.CaseInsensitive
 	result.Metadata["trim_whitespace"] = s.opts.TrimWhitespace
-	result.Metadata["output_length"] = len(output)
-	result.Metadata["expected_length"] = len(expected)
+	result.Metadata["output_length"] = len(in.Output)
+	result.Metadata["expected_length"] = len(in.Expected)
 
 	return result
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	goeval "github.com/datar-psa/go-eval"
 	"github.com/datar-psa/go-eval/interfaces"
 )
 
@@ -151,13 +152,12 @@ func TestModeration_Unit(t *testing.T) {
 				err:    tt.mockErr,
 			}
 
-			scorer := Moderation(ModerationOptions{
-				ModerationProvider: mockProvider,
-				Threshold:          tt.threshold,
-				Categories:         tt.categories,
+			scorer := Moderation(mockProvider, ModerationOptions{
+				Threshold:  tt.threshold,
+				Categories: tt.categories,
 			})
 
-			result := scorer.Score(ctx, tt.input, tt.output, tt.expected)
+			result := scorer.Score(ctx, goeval.ScoreInputs{Output: tt.output, Expected: tt.expected})
 
 			if tt.wantErr {
 				if result.Error == nil {
@@ -204,8 +204,8 @@ func TestModeration_Unit(t *testing.T) {
 func TestModeration_NoProvider(t *testing.T) {
 	ctx := context.Background()
 
-	scorer := Moderation(ModerationOptions{})
-	result := scorer.Score(ctx, "input", "output", "expected")
+	scorer := Moderation(nil, ModerationOptions{})
+	result := scorer.Score(ctx, goeval.ScoreInputs{Output: "output", Expected: "expected"})
 
 	if result.Error == nil {
 		t.Error("Moderation.Score() expected error when provider is nil")

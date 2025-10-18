@@ -89,7 +89,7 @@ func TestExactMatch(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			scorer := ExactMatch(tt.opts)
-			result := scorer.Score(ctx, tt.input, tt.output, tt.expected)
+			result := scorer.Score(ctx, goeval.ScoreInputs{Output: tt.output, Expected: tt.expected})
 
 			if result.Error != tt.wantErr {
 				t.Errorf("ExactMatch.Score() error = %v, wantErr %v", result.Error, tt.wantErr)

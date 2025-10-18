@@ -11,8 +11,6 @@ import (
 
 // ToneRubricOptions configures the ToneRubric scorer
 type ToneRubricOptions struct {
-	// LLM is the language model generator used for evaluation
-	LLM interfaces.LLMGenerator
 	// Weights for each dimension in order: [professionalism, kindness, clarity, helpfulness]
 	// If weight is 0, that dimension is excluded from scoring
 	// If all weights are 0, defaults to equal weights
@@ -22,12 +20,16 @@ type ToneRubricOptions struct {
 // ToneRubric returns a scorer that evaluates professionalism, kindness, clarity, and helpfulness
 // in a single LLM-judge call using a rubric with A–E categories.
 // The final score is a weighted blend of the dimensions, normalized to [0,1].
-func ToneRubric(opts ToneRubricOptions) goeval.Scorer {
-	return &toneRubricScorer{opts: opts}
+func ToneRubric(llm interfaces.LLMGenerator, opts ToneRubricOptions) goeval.Scorer {
+	return &toneRubricScorer{
+		opts: opts,
+		llm:  llm,
+	}
 }
 
 type toneRubricScorer struct {
 	opts ToneRubricOptions
+	llm  interfaces.LLMGenerator
 }
 
 const toneRubricPromptTemplate = `You are evaluating the quality of an AI response across multiple dimensions.
@@ -56,21 +58,21 @@ KINDNESS: <A|B|C|D|E>
 CLARITY: <A|B|C|D|E>
 HELPFULNESS: <A|B|C|D|E>`
 
-func (s *toneRubricScorer) Score(ctx context.Context, input, output, expected string) goeval.Score {
+func (s *toneRubricScorer) Score(ctx context.Context, in goeval.ScoreInputs) goeval.Score {
 	result := goeval.Score{
 		Name:     "ToneRubric",
 		Metadata: make(map[string]any),
 	}
 
-	if s.opts.LLM == nil {
+	if s.llm == nil {
 		result.Error = fmt.Errorf("LLM generator is required")
 		result.Score = 0
 		return result
 	}
 
-	prompt := fmt.Sprintf(toneRubricPromptTemplate, input, output)
+	prompt := fmt.Sprintf(toneRubricPromptTemplate, in.Input, in.Output)
 
-	response, err := s.opts.LLM.Generate(ctx, prompt)
+	response, err := s.llm.Generate(ctx, prompt)
 	if err != nil {
 		result.Error = fmt.Errorf("%w: %v", goeval.ErrLLMGenerationFailed, err)
 		result.Score = 0

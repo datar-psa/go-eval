@@ -8,6 +8,14 @@ A Go library for fast, automated evaluation of Large Language Model (LLM) output
 go get github.com/datar-psa/go-eval
 ```
 
+## How Scoring Works
+
+All scorers follow a simple design pattern:
+- **output**: The actual response from your model
+- **expected**: The expected/reference response (optional for some scorers)
+
+The scorer compares `output` against `expected` and returns a score between 0.0 and 1.0, where 1.0 is the best possible score.
+
 ## Quick Start
 
 ```go
@@ -21,7 +29,7 @@ scorer := heuristic.ExactMatch(heuristic.ExactMatchOptions{
     TrimWhitespace:  true,
 })
 
-result := scorer.Score(ctx, "What is 2+2?", "4", "4")
+result := scorer.Score(ctx, goeval.ScoreInputs{Output: "4", Expected: "4"})
 fmt.Printf("Score: %.2f\n", result.Score) // 1.00
 ```
 
@@ -85,7 +93,7 @@ scorer := llmjudge.ToneRubric(llmjudge.ToneRubricOptions{
     // Note: If one weight is 0, that dimension is excluded from scoring
 })
 
-result := scorer.Score(ctx, "customer complaint", "I understand your frustration...", "")
+result := scorer.Score(ctx, goeval.ScoreInputs{Output: "I understand your frustration..."})
 // result.Score = weighted composite (0.0-1.0)
 // result.Metadata["professionalism.choice"] = "D" (A-E)
 // result.Metadata["kindness.choice"] = "E" (A-E)
@@ -114,11 +122,10 @@ scorer := embedding.EmbeddingSimilarity(embedding.EmbeddingSimilarityOptions{
 })
 
 // Perfect for comparing question similarity
-result := scorer.Score(ctx, 
-    "context",
-    "What is the type of the leave?",
-    "Please provide type of the leave",
-)
+result := scorer.Score(ctx, goeval.ScoreInputs{
+    Output: "What is the type of the leave?",
+    Expected: "Please provide type of the leave",
+})
 // Score: ~0.9-1.0 (highly similar semantically)
 ```
 

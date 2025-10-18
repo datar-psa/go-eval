@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"testing"
+
+	goeval "github.com/datar-psa/go-eval"
 )
 
 // mockLLMGeneratorRubric is a simple mock for unit tests
@@ -159,12 +161,11 @@ func TestToneRubric_Unit(t *testing.T) {
 				err:      tt.llmErr,
 			}
 
-			scorer := ToneRubric(ToneRubricOptions{
-				LLM:     mockLLM,
+			scorer := ToneRubric(mockLLM, ToneRubricOptions{
 				Weights: tt.weights,
 			})
 
-			result := scorer.Score(ctx, tt.input, tt.output, tt.expected)
+			result := scorer.Score(ctx, goeval.ScoreInputs{Input: tt.input, Output: tt.output, Expected: tt.expected})
 
 			if tt.wantErr != nil {
 				if result.Error != tt.wantErr {
@@ -242,8 +243,8 @@ func TestToneRubric_Unit(t *testing.T) {
 func TestToneRubric_NoLLM(t *testing.T) {
 	ctx := context.Background()
 
-	scorer := ToneRubric(ToneRubricOptions{})
-	result := scorer.Score(ctx, "input", "output", "expected")
+	scorer := ToneRubric(nil, ToneRubricOptions{})
+	result := scorer.Score(ctx, goeval.ScoreInputs{Input: "context", Output: "output", Expected: "expected"})
 
 	if result.Error == nil {
 		t.Error("ToneRubric.Score() expected error when LLM is nil")

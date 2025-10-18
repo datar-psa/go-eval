@@ -14,11 +14,21 @@ type Score struct {
 	Error error
 }
 
+// ScoreInputs carries inputs for scoring across different scorers.
+//
+// Fields usage conventions:
+// - Output:   the actual output produced by the model (required for most scorers)
+// - Expected: the reference/expected output (optional depending on scorer)
+// - Input:    the original prompt/context/question given to the model (optional)
+type ScoreInputs struct {
+	Output   string
+	Expected string
+	Input    string
+}
+
 // Scorer evaluates the quality of an output
 type Scorer interface {
 	// Score evaluates the output and returns a score
-	// input: the input provided to the model
-	// output: the actual output from the model
-	// expected: the expected/reference output (optional, can be empty)
-	Score(ctx context.Context, input, output, expected string) Score
+	// in: container for output/expected/input depending on scorer needs
+	Score(ctx context.Context, in ScoreInputs) Score
 }
