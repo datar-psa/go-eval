@@ -1,0 +1,50 @@
+HTTP/2.0 200 OK
+Alt-Svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+Content-Type: application/json; charset=UTF-8
+Date: Mon, 20 Oct 2025 22:55:47 GMT
+Server: scaffolding on HTTPServer2
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "candidates": [
+    {
+      "content": {
+        "role": "model",
+        "parts": [
+          {
+            "text": "{\n  \"choice\": \"C\",\n  \"explanation\": \"The submitted answer 'The answer is 4' provides the exact same factual information as the expert answer '4'. The additional words 'The answer is' in the submitted answer are stylistic and do not alter the factual content, which is identical to the expert answer.\"\n}"
+          }
+        ]
+      },
+      "finishReason": "STOP",
+      "avgLogprobs": -1.945015389578683
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 282,
+    "candidatesTokenCount": 70,
+    "totalTokenCount": 968,
+    "trafficType": "ON_DEMAND",
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 282
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 70
+      }
+    ],
+    "thoughtsTokenCount": 616
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "createTime": "2025-10-20T22:55:44.271436Z",
+  "responseId": "8L32aMzIEKDgxdQP7f-VsAI"
+}

@@ -3,7 +3,6 @@ package llmjudge
 import (
 	"context"
 	"fmt"
-	"regexp"
 
 	goeval "github.com/datar-psa/go-eval"
 	"github.com/datar-psa/go-eval/interfaces"
@@ -52,11 +51,7 @@ Rate each dimension independently using these categories:
 (D) Good
 (E) Excellent
 
-Answer with exactly:
-PROFESSIONALISM: <A|B|C|D|E>
-KINDNESS: <A|B|C|D|E>
-CLARITY: <A|B|C|D|E>
-HELPFULNESS: <A|B|C|D|E>`
+Provide your assessment with ratings for each dimension.`
 
 func (s *toneRubricScorer) Score(ctx context.Context, in goeval.ScoreInputs) goeval.Score {
 	result := goeval.Score{
@@ -72,46 +67,66 @@ func (s *toneRubricScorer) Score(ctx context.Context, in goeval.ScoreInputs) goe
 
 	prompt := fmt.Sprintf(toneRubricPromptTemplate, in.Input, in.Output)
 
-	response, err := s.llm.Generate(ctx, prompt)
-	if err != nil {
-		result.Error = fmt.Errorf("%w: %v", goeval.ErrLLMGenerationFailed, err)
-		result.Score = 0
-		// Set metadata for error case
-		result.Metadata["professionalism.choice"] = ""
-		result.Metadata["professionalism.score"] = 0.0
-		result.Metadata["kindness.choice"] = ""
-		result.Metadata["kindness.score"] = 0.0
-		result.Metadata["clarity.choice"] = ""
-		result.Metadata["clarity.score"] = 0.0
-		result.Metadata["helpfulness.choice"] = ""
-		result.Metadata["helpfulness.score"] = 0.0
-		result.Metadata["weights.professionalism"] = 0.0
-		result.Metadata["weights.kindness"] = 0.0
-		result.Metadata["weights.clarity"] = 0.0
-		result.Metadata["weights.helpfulness"] = 0.0
-		return result
+	// Define schema for structured response
+	schema := map[string]interface{}{
+		"type": "object",
+		"properties": map[string]interface{}{
+			"professionalism": map[string]interface{}{
+				"type":        "string",
+				"enum":        []string{"A", "B", "C", "D", "E"},
+				"description": "Professionalism rating",
+			},
+			"kindness": map[string]interface{}{
+				"type":        "string",
+				"enum":        []string{"A", "B", "C", "D", "E"},
+				"description": "Kindness rating",
+			},
+			"clarity": map[string]interface{}{
+				"type":        "string",
+				"enum":        []string{"A", "B", "C", "D", "E"},
+				"description": "Clarity rating",
+			},
+			"helpfulness": map[string]interface{}{
+				"type":        "string",
+				"enum":        []string{"A", "B", "C", "D", "E"},
+				"description": "Helpfulness rating",
+			},
+		},
+		"required": []string{"professionalism", "kindness", "clarity", "helpfulness"},
 	}
 
-	choices, err := extractToneChoices(response)
+	// Use StructuredGenerate to get structured response
+	structuredResponse, err := s.llm.StructuredGenerate(ctx, prompt, schema)
 	if err != nil {
-		result.Error = fmt.Errorf("failed to extract rubric choices: %w", err)
-		result.Score = 0
-		result.Metadata["raw_response"] = response
-		// Set metadata for parsing error case
-		result.Metadata["professionalism.choice"] = ""
-		result.Metadata["professionalism.score"] = 0.0
-		result.Metadata["kindness.choice"] = ""
-		result.Metadata["kindness.score"] = 0.0
-		result.Metadata["clarity.choice"] = ""
-		result.Metadata["clarity.score"] = 0.0
-		result.Metadata["helpfulness.choice"] = ""
-		result.Metadata["helpfulness.score"] = 0.0
-		result.Metadata["weights.professionalism"] = 0.0
-		result.Metadata["weights.kindness"] = 0.0
-		result.Metadata["weights.clarity"] = 0.0
-		result.Metadata["weights.helpfulness"] = 0.0
-		return result
+		return s.returnError(&result, fmt.Errorf("%w: %v", goeval.ErrLLMGenerationFailed, err), nil)
 	}
+
+	// Extract choices from structured response
+	choices := [4]string{}
+
+	profChoice, ok := structuredResponse["professionalism"].(string)
+	if !ok {
+		return s.returnError(&result, fmt.Errorf("failed to extract professionalism choice from structured response"), structuredResponse)
+	}
+	choices[0] = profChoice
+
+	kindChoice, ok := structuredResponse["kindness"].(string)
+	if !ok {
+		return s.returnError(&result, fmt.Errorf("failed to extract kindness choice from structured response"), structuredResponse)
+	}
+	choices[1] = kindChoice
+
+	clarityChoice, ok := structuredResponse["clarity"].(string)
+	if !ok {
+		return s.returnError(&result, fmt.Errorf("failed to extract clarity choice from structured response"), structuredResponse)
+	}
+	choices[2] = clarityChoice
+
+	helpfulnessChoice, ok := structuredResponse["helpfulness"].(string)
+	if !ok {
+		return s.returnError(&result, fmt.Errorf("failed to extract helpfulness choice from structured response"), structuredResponse)
+	}
+	choices[3] = helpfulnessChoice
 
 	// Map A–E to [0,1]
 	choiceToScore := map[string]float64{
@@ -181,34 +196,27 @@ func (s *toneRubricScorer) Score(ctx context.Context, in goeval.ScoreInputs) goe
 	result.Metadata["weights.kindness"] = weights[1]
 	result.Metadata["weights.clarity"] = weights[2]
 	result.Metadata["weights.helpfulness"] = weights[3]
-	result.Metadata["raw_response"] = response
+	result.Metadata["raw_response"] = structuredResponse
 
 	return result
 }
 
-// extractToneChoices parses the LLM response for all four dimension letters
-// Returns [professionalism, kindness, clarity, helpfulness] choices
-func extractToneChoices(response string) ([4]string, error) {
-	var choices [4]string
-
-	profRe := regexp.MustCompile(`(?i)PROFESSIONALISM:\s*([ABCDE])`)
-	kindRe := regexp.MustCompile(`(?i)KINDNESS:\s*([ABCDE])`)
-	clarityRe := regexp.MustCompile(`(?i)CLARITY:\s*([ABCDE])`)
-	helpfulnessRe := regexp.MustCompile(`(?i)HELPFULNESS:\s*([ABCDE])`)
-
-	profMatches := profRe.FindStringSubmatch(response)
-	kindMatches := kindRe.FindStringSubmatch(response)
-	clarityMatches := clarityRe.FindStringSubmatch(response)
-	helpfulnessMatches := helpfulnessRe.FindStringSubmatch(response)
-
-	if len(profMatches) < 2 || len(kindMatches) < 2 || len(clarityMatches) < 2 || len(helpfulnessMatches) < 2 {
-		return choices, fmt.Errorf("missing one or more dimension choices in response")
-	}
-
-	choices[0] = profMatches[1]        // professionalism
-	choices[1] = kindMatches[1]        // kindness
-	choices[2] = clarityMatches[1]     // clarity
-	choices[3] = helpfulnessMatches[1] // helpfulness
-
-	return choices, nil
+// returnError is a helper function to set error metadata consistently
+func (s *toneRubricScorer) returnError(result *goeval.Score, err error, rawResponse interface{}) goeval.Score {
+	result.Error = err
+	result.Score = 0
+	result.Metadata["raw_response"] = rawResponse
+	result.Metadata["professionalism.choice"] = ""
+	result.Metadata["professionalism.score"] = 0.0
+	result.Metadata["kindness.choice"] = ""
+	result.Metadata["kindness.score"] = 0.0
+	result.Metadata["clarity.choice"] = ""
+	result.Metadata["clarity.score"] = 0.0
+	result.Metadata["helpfulness.choice"] = ""
+	result.Metadata["helpfulness.score"] = 0.0
+	result.Metadata["weights.professionalism"] = 0.0
+	result.Metadata["weights.kindness"] = 0.0
+	result.Metadata["weights.clarity"] = 0.0
+	result.Metadata["weights.helpfulness"] = 0.0
+	return *result
 }

@@ -1,0 +1,9 @@
+POST https://aiplatform.googleapis.com/v1beta1/projects/datar-testing/locations/global/publishers/google/models/text-embedding-005:predict HTTP/1.1
+Host: aiplatform.googleapis.com
+User-Agent: google-genai-sdk/1.31.0 gl-go/go1.25.3
+Content-Length: 61
+Authorization: SANITIZED
+Content-Type: application/json
+X-Goog-Api-Client: google-genai-sdk/1.31.0 gl-go/go1.25.3
+
+{"instances":[{"content":"What is the type of the leave?"}]}

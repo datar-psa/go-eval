@@ -2,6 +2,27 @@ package interfaces
 
 import "context"
 
+// ModerationCategories contains all supported moderation category names
+// These are developer-friendly names that map to Google Cloud Natural Language API categories
+var ModerationCategories []string = []string{
+	"Toxic",
+	"Derogatory",
+	"Violent",
+	"Sexual",
+	"Insult",
+	"Profanity",
+	"DeathHarmTragedy",
+	"FirearmsWeapons",
+	"PublicSafety",
+	"Health",
+	"ReligionBelief",
+	"IllicitDrugs",
+	"WarConflict",
+	"Finance",
+	"Politics",
+	"Legal",
+}
+
 // ModerationCategory represents a safety category with confidence score
 type ModerationCategory struct {
 	Name       string  `json:"name"`
@@ -10,9 +31,7 @@ type ModerationCategory struct {
 
 // ModerationResult represents the result of content moderation
 type ModerationResult struct {
-	Categories    []ModerationCategory `json:"categories"`
-	IsSafe        bool                 `json:"is_safe"`
-	MaxConfidence float64              `json:"max_confidence"`
+	Categories []ModerationCategory `json:"categories"`
 }
 
 // ModerationProvider is an interface for content moderation

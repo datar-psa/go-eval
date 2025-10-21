@@ -358,9 +358,6 @@ func TestModeration_Integration(t *testing.T) {
 			if result.Metadata["flagged_categories"] == nil {
 				t.Error("Moderation.Score() missing flagged_categories in metadata")
 			}
-			if result.Metadata["max_confidence"] == nil {
-				t.Error("Moderation.Score() missing max_confidence in metadata")
-			}
 			if result.Metadata["threshold"] == nil {
 				t.Error("Moderation.Score() missing threshold in metadata")
 			}

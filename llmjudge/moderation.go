@@ -60,8 +60,7 @@ func (s *moderationScorer) Score(ctx context.Context, in goeval.ScoreInputs) goe
 	}
 
 	flaggedCategories := make(map[string]float64)
-	maxConfidence := moderationResp.MaxConfidence
-	isUnsafe := !moderationResp.IsSafe
+	isUnsafe := false
 
 	// Check categories against threshold
 	for _, category := range moderationResp.Categories {
@@ -81,6 +80,7 @@ func (s *moderationScorer) Score(ctx context.Context, in goeval.ScoreInputs) goe
 
 		if category.Confidence > threshold {
 			flaggedCategories[category.Name] = category.Confidence
+			isUnsafe = true
 		}
 	}
 
@@ -93,7 +93,6 @@ func (s *moderationScorer) Score(ctx context.Context, in goeval.ScoreInputs) goe
 
 	// Add metadata
 	result.Metadata["flagged_categories"] = flaggedCategories
-	result.Metadata["max_confidence"] = maxConfidence
 	result.Metadata["threshold"] = threshold
 	result.Metadata["all_categories"] = moderationResp.Categories
 	result.Metadata["is_safe"] = !isUnsafe

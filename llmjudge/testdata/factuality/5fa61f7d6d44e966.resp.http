@@ -1,0 +1,50 @@
+HTTP/2.0 200 OK
+Alt-Svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+Content-Type: application/json; charset=UTF-8
+Date: Mon, 20 Oct 2025 22:55:53 GMT
+Server: scaffolding on HTTPServer2
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "candidates": [
+    {
+      "content": {
+        "role": "model",
+        "parts": [
+          {
+            "text": "{\n  \"choice\": \"A\",\n  \"explanation\": \"The expert answer states that 'Paris is the capital of France'. This statement inherently includes the fact that 'Paris is a city in France', as a capital is a type of city. The submitted answer only provides the less specific fact that Paris is a city in France, omitting the key detail that it is the capital. Therefore, the submitted answer is a subset of the factual information provided by the expert answer and is fully consistent with it.\"\n}"
+          }
+        ]
+      },
+      "finishReason": "STOP",
+      "avgLogprobs": -1.454344976515997
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 287,
+    "candidatesTokenCount": 105,
+    "totalTokenCount": 978,
+    "trafficType": "ON_DEMAND",
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 287
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 105
+      }
+    ],
+    "thoughtsTokenCount": 586
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "createTime": "2025-10-20T22:55:49.765239Z",
+  "responseId": "9b32aLfaLpCTxdQP7PmdsQ0"
+}

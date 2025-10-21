@@ -2,6 +2,7 @@ package llmjudge
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -21,61 +22,63 @@ func (m *mockLLMGenerator) Generate(ctx context.Context, prompt string) (string,
 	return m.response, nil
 }
 
+func (m *mockLLMGenerator) StructuredGenerate(ctx context.Context, prompt string, schema map[string]interface{}) (map[string]interface{}, error) {
+	if m.err != nil {
+		return nil, m.err
+	}
+
+	// Parse the response as JSON for structured responses
+	var result map[string]interface{}
+	if err := json.Unmarshal([]byte(m.response), &result); err != nil {
+		return nil, fmt.Errorf("failed to parse mock response as JSON: %w", err)
+	}
+	return result, nil
+}
+
 func TestFactuality_Unit(t *testing.T) {
 	ctx := context.Background()
 
 	tests := []struct {
-		name         string
-		llmResponse  string
-		llmErr       error
-		input        string
-		output       string
-		expected     string
-		wantErr      error
-		wantScore    float64
-		wantRawScore float64
+		name            string
+		llmResponse     string
+		llmErr          error
+		input           string
+		output          string
+		expected        string
+		wantErr         error
+		wantScore       float64
+		wantChoice      string
+		wantExplanation string
 	}{
 		{
-			name: "fully correct",
-			llmResponse: `Let me evaluate this:
-1. The expected answer states Paris is the capital of France
-2. The actual output also states Paris is the capital of France
-3. There are no contradictions
-
-C`,
-			input:        "What is the capital of France?",
-			output:       "Paris is the capital of France",
-			expected:     "Paris",
-			wantScore:    1.0,
-			wantRawScore: 1.0,
+			name:            "fully correct",
+			llmResponse:     `{"choice": "C", "explanation": "The submitted answer contains all the same details as the expert answer. Both state that Paris is the capital of France with no contradictions."}`,
+			input:           "What is the capital of France?",
+			output:          "Paris is the capital of France",
+			expected:        "Paris",
+			wantScore:       1.0,
+			wantChoice:      "C",
+			wantExplanation: "The submitted answer contains all the same details as the expert answer. Both state that Paris is the capital of France with no contradictions.",
 		},
 		{
-			name: "partially correct",
-			llmResponse: `Let me evaluate this:
-1. The expected answer is 4
-2. The actual output says approximately 4
-3. This is close but not exact
-
-A`,
-			input:        "What is 2+2?",
-			output:       "approximately 4",
-			expected:     "4",
-			wantScore:    0.4,
-			wantRawScore: 0.4,
+			name:            "partially correct",
+			llmResponse:     `{"choice": "A", "explanation": "The submitted answer is a subset of the expert answer and is fully consistent with it. 'approximately 4' is consistent with '4' but provides less precision."}`,
+			input:           "What is 2+2?",
+			output:          "approximately 4",
+			expected:        "4",
+			wantScore:       0.4,
+			wantChoice:      "A",
+			wantExplanation: "The submitted answer is a subset of the expert answer and is fully consistent with it. 'approximately 4' is consistent with '4' but provides less precision.",
 		},
 		{
-			name: "completely wrong",
-			llmResponse: `Let me evaluate this:
-1. The expected answer is London
-2. The actual output says Paris
-3. This is completely wrong
-
-D`,
-			input:        "What is the capital of England?",
-			output:       "Paris",
-			expected:     "London",
-			wantScore:    0.0,
-			wantRawScore: 0.0,
+			name:            "completely wrong",
+			llmResponse:     `{"choice": "D", "explanation": "There is a disagreement between the submitted answer and the expert answer. The expert answer states London is the capital of England, but the submission says Paris."}`,
+			input:           "What is the capital of England?",
+			output:          "Paris",
+			expected:        "London",
+			wantScore:       0.0,
+			wantChoice:      "D",
+			wantExplanation: "There is a disagreement between the submitted answer and the expert answer. The expert answer states London is the capital of England, but the submission says Paris.",
 		},
 		{
 			name:      "no expected value",
@@ -94,8 +97,24 @@ D`,
 			wantScore: 0.0,
 		},
 		{
-			name:        "invalid score format",
-			llmResponse: "This is factually correct but no score provided",
+			name:        "invalid JSON response",
+			llmResponse: "This is not valid JSON",
+			input:       "What is 2+2?",
+			output:      "4",
+			expected:    "4",
+			wantScore:   0.0,
+		},
+		{
+			name:        "missing choice field",
+			llmResponse: `{"explanation": "This response is missing the choice field"}`,
+			input:       "What is 2+2?",
+			output:      "4",
+			expected:    "4",
+			wantScore:   0.0,
+		},
+		{
+			name:        "missing explanation field",
+			llmResponse: `{"choice": "C"}`,
 			input:       "What is 2+2?",
 			output:      "4",
 			expected:    "4",
@@ -122,7 +141,7 @@ D`,
 					t.Error("Factuality.Score() expected error but got none")
 				}
 			} else if tt.llmResponse != "" && tt.wantErr == nil {
-				if result.Error != nil && tt.name != "invalid score format" {
+				if result.Error != nil && tt.name != "invalid JSON response" && tt.name != "missing choice field" && tt.name != "missing explanation field" {
 					t.Errorf("Factuality.Score() unexpected error = %v", result.Error)
 				}
 			}
@@ -131,9 +150,15 @@ D`,
 				t.Errorf("Factuality.Score() score = %v, wantScore %v", result.Score, tt.wantScore)
 			}
 
-			if tt.wantRawScore > 0 {
-				if rawScore, ok := result.Metadata["choice"].(string); !ok || rawScore == "" {
-					t.Errorf("Factuality.Score() choice = %v, want non-empty", rawScore)
+			if tt.wantChoice != "" {
+				if choice, ok := result.Metadata["choice"].(string); !ok || choice != tt.wantChoice {
+					t.Errorf("Factuality.Score() choice = %v, want %v", choice, tt.wantChoice)
+				}
+			}
+
+			if tt.wantExplanation != "" {
+				if explanation, ok := result.Metadata["explanation"].(string); !ok || explanation != tt.wantExplanation {
+					t.Errorf("Factuality.Score() explanation = %v, want %v", explanation, tt.wantExplanation)
 				}
 			}
 
@@ -156,67 +181,5 @@ func TestFactuality_NoLLM(t *testing.T) {
 
 	if result.Score != 0 {
 		t.Errorf("Factuality.Score() score = %v, want 0", result.Score)
-	}
-}
-
-func TestExtractChoice(t *testing.T) {
-	tests := []struct {
-		name       string
-		response   string
-		wantChoice string
-		wantErr    bool
-	}{
-		{
-			name:       "valid choice A",
-			response:   "The submitted answer is a subset of the expert answer and is fully consistent with it. A",
-			wantChoice: "A",
-		},
-		{
-			name:       "valid choice B",
-			response:   "This is a superset answer. B",
-			wantChoice: "B",
-		},
-		{
-			name:       "valid choice C",
-			response:   "Same details. C",
-			wantChoice: "C",
-		},
-		{
-			name:       "valid choice D",
-			response:   "There is disagreement. D",
-			wantChoice: "D",
-		},
-		{
-			name:       "valid choice E",
-			response:   "Differences don't matter. E",
-			wantChoice: "E",
-		},
-		{
-			name:     "no choice",
-			response: "Just some text without a choice",
-			wantErr:  true,
-		},
-		{
-			name:     "invalid choice",
-			response: "This is choice F",
-			wantErr:  true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			choice, err := extractChoice(tt.response)
-
-			if (err != nil) != tt.wantErr {
-				t.Errorf("extractChoice() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-
-			if !tt.wantErr {
-				if choice != tt.wantChoice {
-					t.Errorf("extractChoice() choice = %v, want %v", choice, tt.wantChoice)
-				}
-			}
-		})
 	}
 }

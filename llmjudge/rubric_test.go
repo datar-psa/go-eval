@@ -2,6 +2,7 @@ package llmjudge
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -19,6 +20,19 @@ func (m *mockLLMGeneratorRubric) Generate(ctx context.Context, prompt string) (s
 		return "", m.err
 	}
 	return m.response, nil
+}
+
+func (m *mockLLMGeneratorRubric) StructuredGenerate(ctx context.Context, prompt string, schema map[string]interface{}) (map[string]interface{}, error) {
+	if m.err != nil {
+		return nil, m.err
+	}
+
+	// Parse the response as JSON for structured responses
+	var result map[string]interface{}
+	if err := json.Unmarshal([]byte(m.response), &result); err != nil {
+		return nil, fmt.Errorf("failed to parse mock response as JSON: %w", err)
+	}
+	return result, nil
 }
 
 func TestToneRubric_Unit(t *testing.T) {
@@ -45,7 +59,7 @@ func TestToneRubric_Unit(t *testing.T) {
 	}{
 		{
 			name:                  "excellent all dimensions",
-			llmResponse:           "PROFESSIONALISM: E\nKINDNESS: E\nCLARITY: E\nHELPFULNESS: E",
+			llmResponse:           `{"professionalism": "E", "kindness": "E", "clarity": "E", "helpfulness": "E"}`,
 			input:                 "customer complaint",
 			output:                "I understand your frustration and I'm here to help resolve this issue professionally.",
 			expected:              "",
@@ -62,7 +76,7 @@ func TestToneRubric_Unit(t *testing.T) {
 		},
 		{
 			name:                  "mixed scores",
-			llmResponse:           "PROFESSIONALISM: D\nKINDNESS: E\nCLARITY: C\nHELPFULNESS: D",
+			llmResponse:           `{"professionalism": "D", "kindness": "E", "clarity": "C", "helpfulness": "D"}`,
 			input:                 "support request",
 			output:                "I'm really sorry you're experiencing this issue. Let me help you right away.",
 			expected:              "",
@@ -79,7 +93,7 @@ func TestToneRubric_Unit(t *testing.T) {
 		},
 		{
 			name:                  "default weights",
-			llmResponse:           "PROFESSIONALISM: C\nKINDNESS: D\nCLARITY: C\nHELPFULNESS: D",
+			llmResponse:           `{"professionalism": "C", "kindness": "D", "clarity": "C", "helpfulness": "D"}`,
 			input:                 "question",
 			output:                "Answer here",
 			expected:              "",
@@ -96,7 +110,7 @@ func TestToneRubric_Unit(t *testing.T) {
 		},
 		{
 			name:                  "single dimension only",
-			llmResponse:           "PROFESSIONALISM: E\nKINDNESS: A\nCLARITY: A\nHELPFULNESS: A",
+			llmResponse:           `{"professionalism": "E", "kindness": "A", "clarity": "A", "helpfulness": "A"}`,
 			input:                 "formal inquiry",
 			output:                "Professional response",
 			expected:              "",
@@ -113,7 +127,7 @@ func TestToneRubric_Unit(t *testing.T) {
 		},
 		{
 			name:                  "clarity and helpfulness only",
-			llmResponse:           "PROFESSIONALISM: A\nKINDNESS: A\nCLARITY: E\nHELPFULNESS: E",
+			llmResponse:           `{"professionalism": "A", "kindness": "A", "clarity": "E", "helpfulness": "E"}`,
 			input:                 "educational content",
 			output:                "Clear and helpful response",
 			expected:              "",
@@ -137,8 +151,8 @@ func TestToneRubric_Unit(t *testing.T) {
 			wantScore: 0.0,
 		},
 		{
-			name:        "invalid response format",
-			llmResponse: "This is not in the expected format",
+			name:        "invalid JSON response",
+			llmResponse: "This is not valid JSON",
 			input:       "question",
 			output:      "response",
 			expected:    "",
@@ -146,7 +160,7 @@ func TestToneRubric_Unit(t *testing.T) {
 		},
 		{
 			name:        "missing dimensions",
-			llmResponse: "PROFESSIONALISM: E\nKINDNESS: E",
+			llmResponse: `{"professionalism": "E", "kindness": "E"}`,
 			input:       "question",
 			output:      "response",
 			expected:    "",
@@ -176,7 +190,7 @@ func TestToneRubric_Unit(t *testing.T) {
 					t.Error("ToneRubric.Score() expected error but got none")
 				}
 			} else if tt.llmResponse != "" && tt.wantErr == nil {
-				if result.Error != nil && tt.name != "invalid response format" && tt.name != "missing dimensions" {
+				if result.Error != nil && tt.name != "invalid JSON response" && tt.name != "missing dimensions" {
 					t.Errorf("ToneRubric.Score() unexpected error = %v", result.Error)
 				}
 			}
@@ -252,106 +266,5 @@ func TestToneRubric_NoLLM(t *testing.T) {
 
 	if result.Score != 0 {
 		t.Errorf("ToneRubric.Score() score = %v, want 0", result.Score)
-	}
-}
-
-func TestExtractToneChoices(t *testing.T) {
-	tests := []struct {
-		name                  string
-		response              string
-		wantProfChoice        string
-		wantKindChoice        string
-		wantClarityChoice     string
-		wantHelpfulnessChoice string
-		wantErr               bool
-	}{
-		{
-			name:                  "valid format",
-			response:              "PROFESSIONALISM: D\nKINDNESS: E\nCLARITY: C\nHELPFULNESS: B",
-			wantProfChoice:        "D",
-			wantKindChoice:        "E",
-			wantClarityChoice:     "C",
-			wantHelpfulnessChoice: "B",
-		},
-		{
-			name:                  "with whitespace",
-			response:              "PROFESSIONALISM:    C\nKINDNESS:   B\nCLARITY:    A\nHELPFULNESS:   D",
-			wantProfChoice:        "C",
-			wantKindChoice:        "B",
-			wantClarityChoice:     "A",
-			wantHelpfulnessChoice: "D",
-		},
-		{
-			name:                  "case insensitive",
-			response:              "professionalism: A\nkindness: B\nclarity: C\nhelpfulness: D",
-			wantProfChoice:        "A",
-			wantKindChoice:        "B",
-			wantClarityChoice:     "C",
-			wantHelpfulnessChoice: "D",
-		},
-		{
-			name:                  "mixed case",
-			response:              "Professionalism: E\nKindness: D\nClarity: C\nHelpfulness: B",
-			wantProfChoice:        "E",
-			wantKindChoice:        "D",
-			wantClarityChoice:     "C",
-			wantHelpfulnessChoice: "B",
-		},
-		{
-			name:     "missing professionalism",
-			response: "KINDNESS: E\nCLARITY: D\nHELPFULNESS: C",
-			wantErr:  true,
-		},
-		{
-			name:     "missing kindness",
-			response: "PROFESSIONALISM: E\nCLARITY: D\nHELPFULNESS: C",
-			wantErr:  true,
-		},
-		{
-			name:     "missing clarity",
-			response: "PROFESSIONALISM: E\nKINDNESS: D\nHELPFULNESS: C",
-			wantErr:  true,
-		},
-		{
-			name:     "missing helpfulness",
-			response: "PROFESSIONALISM: E\nKINDNESS: D\nCLARITY: C",
-			wantErr:  true,
-		},
-		{
-			name:     "invalid choice",
-			response: "PROFESSIONALISM: X\nKINDNESS: Y\nCLARITY: Z\nHELPFULNESS: W",
-			wantErr:  true,
-		},
-		{
-			name:     "no choices",
-			response: "Just some text",
-			wantErr:  true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			choices, err := extractToneChoices(tt.response)
-
-			if (err != nil) != tt.wantErr {
-				t.Errorf("extractToneChoices() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-
-			if !tt.wantErr {
-				if choices[0] != tt.wantProfChoice {
-					t.Errorf("extractToneChoices() profChoice = %v, want %v", choices[0], tt.wantProfChoice)
-				}
-				if choices[1] != tt.wantKindChoice {
-					t.Errorf("extractToneChoices() kindChoice = %v, want %v", choices[1], tt.wantKindChoice)
-				}
-				if choices[2] != tt.wantClarityChoice {
-					t.Errorf("extractToneChoices() clarityChoice = %v, want %v", choices[2], tt.wantClarityChoice)
-				}
-				if choices[3] != tt.wantHelpfulnessChoice {
-					t.Errorf("extractToneChoices() helpfulnessChoice = %v, want %v", choices[3], tt.wantHelpfulnessChoice)
-				}
-			}
-		})
 	}
 }

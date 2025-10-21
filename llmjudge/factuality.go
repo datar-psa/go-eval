@@ -3,7 +3,6 @@ package llmjudge
 import (
 	"context"
 	"fmt"
-	"regexp"
 
 	goeval "github.com/datar-psa/go-eval"
 	"github.com/datar-psa/go-eval/interfaces"
@@ -47,7 +46,7 @@ The submitted answer may either be a subset or superset of the expert answer, or
 (D) There is a disagreement between the submitted answer and the expert answer.
 (E) The answers differ, but these differences don't matter from the perspective of factuality.
 
-Answer with just the letter (A, B, C, D, or E).`
+Provide your assessment with a choice (A, B, C, D, or E) and a detailed explanation of your reasoning.`
 
 func (s *factualityScorer) Score(ctx context.Context, in goeval.ScoreInputs) goeval.Score {
 	result := goeval.Score{
@@ -69,19 +68,45 @@ func (s *factualityScorer) Score(ctx context.Context, in goeval.ScoreInputs) goe
 
 	prompt := fmt.Sprintf(factualityPromptTemplate, in.Input, in.Expected, in.Output)
 
-	response, err := s.llm.Generate(ctx, prompt)
+	// Define schema for structured response
+	schema := map[string]interface{}{
+		"type": "object",
+		"properties": map[string]interface{}{
+			"choice": map[string]interface{}{
+				"type":        "string",
+				"enum":        []string{"A", "B", "C", "D", "E"},
+				"description": "The factuality assessment choice",
+			},
+			"explanation": map[string]interface{}{
+				"type":        "string",
+				"description": "Detailed explanation of the factuality assessment",
+			},
+		},
+		"required": []string{"choice", "explanation"},
+	}
+
+	// Use StructuredGenerate to get structured response
+	structuredResponse, err := s.llm.StructuredGenerate(ctx, prompt, schema)
 	if err != nil {
 		result.Error = fmt.Errorf("%w: %v", goeval.ErrLLMGenerationFailed, err)
 		result.Score = 0
 		return result
 	}
 
-	// Extract choice from response
-	choice, err := extractChoice(response)
-	if err != nil {
-		result.Error = fmt.Errorf("failed to extract choice: %w", err)
+	// Extract choice and explanation from structured response
+	choice, ok := structuredResponse["choice"].(string)
+	if !ok {
+		result.Error = fmt.Errorf("failed to extract choice from structured response")
 		result.Score = 0
-		result.Metadata["raw_response"] = response
+		result.Metadata["raw_response"] = structuredResponse
+		return result
+	}
+
+	explanation, ok := structuredResponse["explanation"].(string)
+	if !ok {
+		result.Error = fmt.Errorf("failed to extract explanation from structured response")
+		result.Score = 0
+		result.Metadata["raw_response"] = structuredResponse
 		return result
 	}
 
@@ -96,22 +121,8 @@ func (s *factualityScorer) Score(ctx context.Context, in goeval.ScoreInputs) goe
 
 	result.Score = choiceScores[choice]
 	result.Metadata["choice"] = choice
-	result.Metadata["raw_response"] = response
+	result.Metadata["explanation"] = explanation
+	result.Metadata["raw_response"] = structuredResponse
 
 	return result
-}
-
-// extractChoice extracts the choice from the LLM response
-// Returns the choice (A, B, C, D, or E) and any error
-func extractChoice(response string) (string, error) {
-	// Look for single letter choices
-	choiceRegex := regexp.MustCompile(`\b([ABCDE])\b`)
-	matches := choiceRegex.FindStringSubmatch(response)
-
-	if len(matches) < 2 {
-		return "", fmt.Errorf("could not find valid choice (A, B, C, D, or E) in response")
-	}
-
-	choice := matches[1]
-	return choice, nil
 }

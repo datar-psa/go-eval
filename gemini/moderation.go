@@ -83,30 +83,71 @@ func (p *GoogleCloudProvider) Moderate(ctx context.Context, content string) (*in
 
 	// Parse response
 	var apiResponse struct {
-		ModerationCategories []interfaces.ModerationCategory `json:"moderationCategories"`
+		ModerationCategories []struct {
+			Name       string  `json:"name"`
+			Confidence float64 `json:"confidence"`
+		} `json:"moderationCategories"`
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&apiResponse); err != nil {
 		return nil, fmt.Errorf("failed to decode response: %w", err)
 	}
 
-	// Process results
-	maxConfidence := 0.0
-	isSafe := true
+	// Map Google Cloud categories to standardized names
+	categories := make([]interfaces.ModerationCategory, 0, len(apiResponse.ModerationCategories))
 
 	for _, category := range apiResponse.ModerationCategories {
-		if category.Confidence > maxConfidence {
-			maxConfidence = category.Confidence
-		}
-		// Consider content unsafe if any category has high confidence
-		if category.Confidence > 0.5 {
-			isSafe = false
-		}
+		// Map Google Cloud category names to developer-friendly names
+		standardizedName := mapCategoryName(category.Name)
+
+		categories = append(categories, interfaces.ModerationCategory{
+			Name:       standardizedName,
+			Confidence: category.Confidence,
+		})
 	}
 
 	return &interfaces.ModerationResult{
-		Categories:    apiResponse.ModerationCategories,
-		IsSafe:        isSafe,
-		MaxConfidence: maxConfidence,
+		Categories: categories,
 	}, nil
+}
+
+// mapCategoryName maps Google Cloud Natural Language API category names to developer-friendly names
+func mapCategoryName(googleCategory string) string {
+	switch googleCategory {
+	case "Toxic":
+		return "Toxic"
+	case "Derogatory":
+		return "Derogatory"
+	case "Violent":
+		return "Violent"
+	case "Sexual":
+		return "Sexual"
+	case "Insult":
+		return "Insult"
+	case "Profanity":
+		return "Profanity"
+	case "Death, Harm & Tragedy":
+		return "DeathHarmTragedy"
+	case "Firearms & Weapons":
+		return "FirearmsWeapons"
+	case "Public Safety":
+		return "PublicSafety"
+	case "Health":
+		return "Health"
+	case "Religion & Belief":
+		return "ReligionBelief"
+	case "Illicit Drugs":
+		return "IllicitDrugs"
+	case "War & Conflict":
+		return "WarConflict"
+	case "Finance":
+		return "Finance"
+	case "Politics":
+		return "Politics"
+	case "Legal":
+		return "Legal"
+	default:
+		// Return original name if not recognized
+		return googleCategory
+	}
 }
