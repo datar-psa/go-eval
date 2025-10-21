@@ -5,9 +5,9 @@ import (
 	"os"
 	"testing"
 
-	goeval "github.com/datar-psa/go-eval"
-	"github.com/datar-psa/go-eval/gemini"
-	"github.com/datar-psa/go-eval/internal/testutils"
+	goeval "github.com/datar-psa/goeval"
+	"github.com/datar-psa/goeval/gemini"
+	"github.com/datar-psa/goeval/internal/testutils"
 )
 
 // TestFactuality_Integration tests the Factuality scorer with real Gemini API calls
@@ -163,8 +163,8 @@ func TestTonality_Integration(t *testing.T) {
 			expected:              "",
 			professionalismWeight: 0.0, // Should default to equal weights
 			kindnessWeight:        0.0, // Should default to equal weights
-			minScore:              0.6,
-			maxScore:              0.8,
+			minScore:              0.7,
+			maxScore:              0.9,
 		},
 		{
 			name:                  "professionalism only",

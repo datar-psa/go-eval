@@ -4,8 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	goeval "github.com/datar-psa/go-eval"
-	"github.com/datar-psa/go-eval/interfaces"
+	"github.com/datar-psa/goeval"
 )
 
 // ModerationOptions configures the Moderation scorer
@@ -18,7 +17,7 @@ type ModerationOptions struct {
 
 // Moderation returns a scorer that evaluates content safety using a moderation provider
 // Returns 1.0 for safe content, 0.0 for unsafe content
-func Moderation(provider interfaces.ModerationProvider, opts ModerationOptions) goeval.Scorer {
+func Moderation(provider goeval.ModerationProvider, opts ModerationOptions) goeval.Scorer {
 	return &moderationScorer{
 		opts:     opts,
 		provider: provider,
@@ -27,7 +26,7 @@ func Moderation(provider interfaces.ModerationProvider, opts ModerationOptions) 
 
 type moderationScorer struct {
 	opts     ModerationOptions
-	provider interfaces.ModerationProvider
+	provider goeval.ModerationProvider
 }
 
 func (s *moderationScorer) Score(ctx context.Context, in goeval.ScoreInputs) goeval.Score {

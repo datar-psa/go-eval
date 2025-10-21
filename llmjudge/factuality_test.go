@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"testing"
 
-	goeval "github.com/datar-psa/go-eval"
+	"github.com/datar-psa/goeval"
 )
 
 // mockLLMGenerator is a simple mock for unit tests
@@ -52,32 +52,32 @@ func TestFactuality_Unit(t *testing.T) {
 	}{
 		{
 			name:            "fully correct",
-			llmResponse:     `{"choice": "C", "explanation": "The submitted answer contains all the same details as the expert answer. Both state that Paris is the capital of France with no contradictions."}`,
+			llmResponse:     `{"choice": "A", "explanation": "The submitted answer contains all the same details as the expert answer. Both state that Paris is the capital of France with no contradictions."}`,
 			input:           "What is the capital of France?",
 			output:          "Paris is the capital of France",
 			expected:        "Paris",
 			wantScore:       1.0,
-			wantChoice:      "C",
+			wantChoice:      "A",
 			wantExplanation: "The submitted answer contains all the same details as the expert answer. Both state that Paris is the capital of France with no contradictions.",
 		},
 		{
 			name:            "partially correct",
-			llmResponse:     `{"choice": "A", "explanation": "The submitted answer is a subset of the expert answer and is fully consistent with it. 'approximately 4' is consistent with '4' but provides less precision."}`,
+			llmResponse:     `{"choice": "D", "explanation": "The submitted answer is a subset of the expert answer and is fully consistent with it. 'approximately 4' is consistent with '4' but provides less precision."}`,
 			input:           "What is 2+2?",
 			output:          "approximately 4",
 			expected:        "4",
 			wantScore:       0.4,
-			wantChoice:      "A",
+			wantChoice:      "D",
 			wantExplanation: "The submitted answer is a subset of the expert answer and is fully consistent with it. 'approximately 4' is consistent with '4' but provides less precision.",
 		},
 		{
 			name:            "completely wrong",
-			llmResponse:     `{"choice": "D", "explanation": "There is a disagreement between the submitted answer and the expert answer. The expert answer states London is the capital of England, but the submission says Paris."}`,
+			llmResponse:     `{"choice": "E", "explanation": "There is a disagreement between the submitted answer and the expert answer. The expert answer states London is the capital of England, but the submission says Paris."}`,
 			input:           "What is the capital of England?",
 			output:          "Paris",
 			expected:        "London",
 			wantScore:       0.0,
-			wantChoice:      "D",
+			wantChoice:      "E",
 			wantExplanation: "There is a disagreement between the submitted answer and the expert answer. The expert answer states London is the capital of England, but the submission says Paris.",
 		},
 		{

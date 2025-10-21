@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	goeval "github.com/datar-psa/go-eval"
+	"github.com/datar-psa/goeval"
 )
 
 // ExactMatchOptions configures the ExactMatch scorer

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/datar-psa/go-eval/interfaces"
+	"github.com/datar-psa/goeval"
 	"google.golang.org/genai"
 )
 
@@ -60,5 +60,5 @@ func (e *Embedder) Embed(ctx context.Context, text string) ([]float64, error) {
 	return embedding, nil
 }
 
-// Verify that Embedder implements interfaces.Embedder
-var _ interfaces.Embedder = (*Embedder)(nil)
+// Verify that Embedder implements goeval.Embedder
+var _ goeval.Embedder = (*Embedder)(nil)

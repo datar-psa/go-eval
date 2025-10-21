@@ -1,0 +1,50 @@
+HTTP/2.0 200 OK
+Alt-Svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+Content-Type: application/json; charset=UTF-8
+Date: Tue, 21 Oct 2025 22:34:36 GMT
+Server: scaffolding on HTTPServer2
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "candidates": [
+    {
+      "content": {
+        "role": "model",
+        "parts": [
+          {
+            "text": "{\n  \"professionalism\": \"A\",\n  \"kindness\": \"B\",\n  \"clarity\": \"A\",\n  \"helpfulness\": \"A\",\n  \"clarity_confidence\": 1.0,\n  \"clarity_evidence\": [\n    \"Please find attached the requested documentation.\"\n  ],\n  \"clarity_explanation\": \"The response is exceptionally clear and concise, directly stating that the requested documentation is attached without ambiguity.\",\n  \"helpfulness_confidence\": 1.0,\n  \"helpfulness_evidence\": [\n    \"Please find attached the requested documentation.\"\n  ],\n  \"helpfulness_explanation\": \"The response directly addresses the request by confirming the attachment of the requested documentation, fully resolving the inquiry.\",\n  \"kindness_confidence\": 0.9,\n  \"kindness_evidence\": [\n    \"We appreciate your inquiry.\"\n  ],\n  \"kindness_explanation\": \"The opening phrase \\\"We appreciate your inquiry\\\" conveys a polite and supportive tone, demonstrating kindness.\",\n  \"professionalism_confidence\": 1.0,\n  \"professionalism_evidence\": [\n    \"We appreciate your inquiry.\",\n    \"Please find attached the requested documentation.\"\n  ],\n  \"professionalism_explanation\": \"The language used is formal, precise, and neutral, perfectly suited for a formal business inquiry.\"\n}"
+          }
+        ]
+      },
+      "finishReason": "STOP",
+      "avgLogprobs": -0.47586064760376806
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 605,
+    "candidatesTokenCount": 294,
+    "totalTokenCount": 1435,
+    "trafficType": "ON_DEMAND",
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 605
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 294
+      }
+    ],
+    "thoughtsTokenCount": 536
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "createTime": "2025-10-21T22:34:31.878262Z",
+  "responseId": "dwr4aLbNNfSugLUPucqm0Qc"
+}

@@ -4,8 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	goeval "github.com/datar-psa/go-eval"
-	"github.com/datar-psa/go-eval/interfaces"
+	"github.com/datar-psa/goeval"
 )
 
 // FactualityOptions configures the Factuality scorer
@@ -15,7 +14,7 @@ type FactualityOptions struct {
 
 // Factuality returns a scorer that uses an LLM to evaluate if the output is factually consistent with the expected answer
 // This scorer uses chain-of-thought reasoning to determine factuality
-func Factuality(llm interfaces.LLMGenerator, opts FactualityOptions) goeval.Scorer {
+func Factuality(llm goeval.LLMGenerator, opts FactualityOptions) goeval.Scorer {
 	return &factualityScorer{
 		opts: opts,
 		llm:  llm,
@@ -24,7 +23,7 @@ func Factuality(llm interfaces.LLMGenerator, opts FactualityOptions) goeval.Scor
 
 type factualityScorer struct {
 	opts FactualityOptions
-	llm  interfaces.LLMGenerator
+	llm  goeval.LLMGenerator
 }
 
 const factualityPromptTemplate = `You are comparing a submitted answer to an expert answer on a given question. Here is the data:
@@ -40,11 +39,11 @@ const factualityPromptTemplate = `You are comparing a submitted answer to an exp
 
 Compare the factual content of the submitted answer with the expert answer. Ignore any differences in style, grammar, or punctuation.
 The submitted answer may either be a subset or superset of the expert answer, or it may conflict with it. Determine which case applies. Answer the question by selecting one of the following options:
-(A) The submitted answer is a subset of the expert answer and is fully consistent with it.
-(B) The submitted answer is a superset of the expert answer and is fully consistent with it.
-(C) The submitted answer contains all the same details as the expert answer.
-(D) There is a disagreement between the submitted answer and the expert answer.
-(E) The answers differ, but these differences don't matter from the perspective of factuality.
+(A) The submitted answer contains all the same details as the expert answer (EXCELLENT).
+(B) The answers differ, but these differences don't matter from the perspective of factuality (VERY GOOD).
+(C) The submitted answer is a superset of the expert answer and is fully consistent with it (GOOD).
+(D) The submitted answer is a subset of the expert answer and is fully consistent with it (FAIR).
+(E) There is a disagreement between the submitted answer and the expert answer (POOR).
 
 Provide your assessment with a choice (A, B, C, D, or E) and a detailed explanation of your reasoning.`
 
@@ -75,7 +74,7 @@ func (s *factualityScorer) Score(ctx context.Context, in goeval.ScoreInputs) goe
 			"choice": map[string]interface{}{
 				"type":        "string",
 				"enum":        []string{"A", "B", "C", "D", "E"},
-				"description": "The factuality assessment choice: (A) subset and consistent, (B) superset and consistent, (C) same details, (D) disagreement, (E) differences don't matter",
+				"description": "The factuality assessment choice: (A) same details (EXCELLENT), (B) differences don't matter (VERY GOOD), (C) superset and consistent (GOOD), (D) subset and consistent (FAIR), (E) disagreement (POOR)",
 			},
 			"explanation": map[string]interface{}{
 				"type":        "string",
@@ -110,13 +109,13 @@ func (s *factualityScorer) Score(ctx context.Context, in goeval.ScoreInputs) goe
 		return result
 	}
 
-	// Map choice to score based on Braintrust scoring
+	// Map choice to score using school-style grading (A=best, E=worst)
 	choiceScores := map[string]float64{
-		"A": 0.4, // subset and consistent
-		"B": 0.6, // superset and consistent
-		"C": 1.0, // same details
-		"D": 0.0, // disagreement
-		"E": 1.0, // differences don't matter
+		"A": 1.0, // same details
+		"B": 0.8, // differences don't matter
+		"C": 0.6, // superset and consistent
+		"D": 0.4, // subset and consistent
+		"E": 0.0, // disagreement
 	}
 
 	result.Score = choiceScores[choice]

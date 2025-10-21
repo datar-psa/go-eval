@@ -1,7 +1,7 @@
 HTTP/2.0 200 OK
 Alt-Svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
 Content-Type: application/json; charset=UTF-8
-Date: Tue, 21 Oct 2025 13:29:04 GMT
+Date: Tue, 21 Oct 2025 22:19:23 GMT
 Server: scaffolding on HTTPServer2
 Vary: Origin
 Vary: X-Origin
@@ -17,18 +17,18 @@ X-Xss-Protection: 0
         "role": "model",
         "parts": [
           {
-            "text": "{\n  \"professionalism\": \"D\",\n  \"kindness\": \"C\",\n  \"clarity\": \"D\",\n  \"helpfulness\": \"C\",\n  \"clarity_confidence\": 0.9,\n  \"clarity_evidence\": [\n    \"Your order has been delayed due to shipping issues.\",\n    \"We are processing your request and will update you when resolved.\"\n  ],\n  \"clarity_explanation\": \"The message is direct and easy to understand, clearly stating the issue and next steps without ambiguity.\",\n  \"helpfulness_confidence\": 0.8,\n  \"helpfulness_evidence\": [\n    \"Your order has been delayed due to shipping issues.\",\n    \"We are processing your request and will update you when resolved.\"\n  ],\n  \"helpfulness_explanation\": \"It addresses the complaint and states an action, but lacks specific actionable guidance or timeline for the customer.\",\n  \"kindness_confidence\": 0.8,\n  \"kindness_evidence\": [\n    \"Your order has been delayed due to shipping issues.\",\n    \"We are processing your request and will update you when resolved.\"\n  ],\n  \"kindness_explanation\": \"The response is polite and factual but lacks empathy or an apology regarding the delay.\",\n  \"professionalism_confidence\": 0.9,\n  \"professionalism_evidence\": [\n    \"Your order has been delayed due to shipping issues.\",\n    \"We are processing your request and will update you when resolved.\"\n  ],\n  \"professionalism_explanation\": \"The response uses neutral, precise language and maintains a consistently professional tone without informality.\"\n}"
+            "text": "{\"professionalism\": \"D\", \"kindness\": \"C\", \"clarity\": \"D\", \"helpfulness\": \"C\", \"clarity_confidence\": 1.0, \"clarity_evidence\": [\"Your order has been delayed\", \"due to shipping issues\", \"will update you when resolved\"], \"clarity_explanation\": \"The message clearly states the problem, its cause, and the next steps in a concise manner.\", \"helpfulness_confidence\": 0.9, \"helpfulness_evidence\": [\"Your order has been delayed\", \"We are processing your request\", \"will update you when resolved\"], \"helpfulness_explanation\": \"It addresses the delay and promises an update, but lacks immediate actionable steps or specific timelines for the customer.\", \"kindness_confidence\": 0.9, \"kindness_evidence\": [\"Your order has been delayed\", \"We are processing your request\"], \"kindness_explanation\": \"The tone is neutral and polite, but lacks explicit empathy for the customer's frustration regarding the delay.\", \"professionalism_confidence\": 1.0, \"professionalism_evidence\": [\"Your order has been delayed\", \"We are processing your request\", \"will update you when resolved\"], \"professionalism_explanation\": \"The language is neutral and precise without being overly formal or informal.\"}"
           }
         ]
       },
       "finishReason": "STOP",
-      "avgLogprobs": -0.45187498280699823
+      "avgLogprobs": -0.60498778846431045
     }
   ],
   "usageMetadata": {
     "promptTokenCount": 513,
-    "candidatesTokenCount": 355,
-    "totalTokenCount": 1470,
+    "candidatesTokenCount": 271,
+    "totalTokenCount": 1454,
     "trafficType": "ON_DEMAND",
     "promptTokensDetails": [
       {
@@ -39,12 +39,12 @@ X-Xss-Protection: 0
     "candidatesTokensDetails": [
       {
         "modality": "TEXT",
-        "tokenCount": 355
+        "tokenCount": 271
       }
     ],
-    "thoughtsTokenCount": 602
+    "thoughtsTokenCount": 670
   },
   "modelVersion": "gemini-2.5-flash",
-  "createTime": "2025-10-21T13:28:58.566935Z",
-  "responseId": "mor3aJfNIoWSmecPoKmYqQE"
+  "createTime": "2025-10-21T22:19:18.365401Z",
+  "responseId": "5gb4aNmmFuet698P28GMwAM"
 }

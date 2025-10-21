@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/datar-psa/go-eval/interfaces"
+	"github.com/datar-psa/goeval"
 	"google.golang.org/genai"
 )
 
@@ -119,4 +119,4 @@ func (g *Generator) convertToGenaiSchema(schema map[string]interface{}) (*genai.
 }
 
 // Verify that Generator implements LLMGenerator
-var _ interfaces.LLMGenerator = (*Generator)(nil)
+var _ goeval.LLMGenerator = (*Generator)(nil)

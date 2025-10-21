@@ -6,7 +6,7 @@ import (
 	"math"
 	"testing"
 
-	goeval "github.com/datar-psa/go-eval"
+	"github.com/datar-psa/goeval"
 )
 
 // mockEmbedder is a simple mock for unit tests

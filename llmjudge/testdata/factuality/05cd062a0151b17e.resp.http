@@ -1,0 +1,50 @@
+HTTP/2.0 200 OK
+Alt-Svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+Content-Type: application/json; charset=UTF-8
+Date: Tue, 21 Oct 2025 22:19:04 GMT
+Server: scaffolding on HTTPServer2
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "candidates": [
+    {
+      "content": {
+        "role": "model",
+        "parts": [
+          {
+            "text": "{\"choice\": \"C\", \"explanation\": \"Both the expert answer and the submitted answer state that the result of 2+2 is 4. The submitted answer includes the phrase \\\"The answer is \\\", which is a stylistic addition and does not change or add to the core factual information provided by the expert answer. Therefore, both answers contain the same factual details.\"}"
+          }
+        ]
+      },
+      "finishReason": "STOP",
+      "avgLogprobs": -1.9326509174547697
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 317,
+    "candidatesTokenCount": 76,
+    "totalTokenCount": 750,
+    "trafficType": "ON_DEMAND",
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 317
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 76
+      }
+    ],
+    "thoughtsTokenCount": 357
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "createTime": "2025-10-21T22:19:01.338931Z",
+  "responseId": "1Qb4aPPXFOGTsbQPi4HJ4AM"
+}

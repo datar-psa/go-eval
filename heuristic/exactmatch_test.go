@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	goeval "github.com/datar-psa/go-eval"
+	"github.com/datar-psa/goeval"
 )
 
 func TestExactMatch(t *testing.T) {

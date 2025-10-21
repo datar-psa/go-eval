@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"testing"
 
-	goeval "github.com/datar-psa/go-eval"
+	goeval "github.com/datar-psa/goeval"
 )
 
 // mockLLMGeneratorRubric is a simple mock for unit tests
@@ -60,16 +60,16 @@ func TestTonality_Unit(t *testing.T) {
 	}{
 		{
 			name:                  "excellent all dimensions",
-			llmResponse:           `{"professionalism": "E", "kindness": "E", "clarity": "E", "helpfulness": "E"}`,
+			llmResponse:           `{"professionalism": "A", "kindness": "A", "clarity": "A", "helpfulness": "A"}`,
 			input:                 "customer complaint",
 			output:                "I understand your frustration and I'm here to help resolve this issue professionally.",
 			expected:              "",
 			weights:               [4]float64{0.3, 0.2, 0.3, 0.2}, // Custom weights
 			wantScore:             1.0,                            // All dimensions excellent
-			wantProfChoice:        "E",
-			wantKindChoice:        "E",
-			wantClarityChoice:     "E",
-			wantHelpfulnessChoice: "E",
+			wantProfChoice:        "A",
+			wantKindChoice:        "A",
+			wantClarityChoice:     "A",
+			wantHelpfulnessChoice: "A",
 			wantProfScore:         1.0,
 			wantKindScore:         1.0,
 			wantClarityScore:      1.0,
@@ -77,16 +77,16 @@ func TestTonality_Unit(t *testing.T) {
 		},
 		{
 			name:                  "mixed scores",
-			llmResponse:           `{"professionalism": "D", "kindness": "E", "clarity": "C", "helpfulness": "D"}`,
+			llmResponse:           `{"professionalism": "B", "kindness": "A", "clarity": "C", "helpfulness": "B"}`,
 			input:                 "support request",
 			output:                "I'm really sorry you're experiencing this issue. Let me help you right away.",
 			expected:              "",
 			weights:               [4]float64{0.3, 0.2, 0.3, 0.2},
-			wantScore:             0.725, // 0.3*0.75 + 0.2*1.0 + 0.3*0.5 + 0.2*0.75 = 0.725
-			wantProfChoice:        "D",
-			wantKindChoice:        "E",
+			wantScore:             0.725, // 0.3*0.75 + 0.2*1.0 + 0.3*0.5 + 0.2*0.75 = 0.75
+			wantProfChoice:        "B",
+			wantKindChoice:        "A",
 			wantClarityChoice:     "C",
-			wantHelpfulnessChoice: "D",
+			wantHelpfulnessChoice: "B",
 			wantProfScore:         0.75,
 			wantKindScore:         1.0,
 			wantClarityScore:      0.5,
@@ -94,16 +94,16 @@ func TestTonality_Unit(t *testing.T) {
 		},
 		{
 			name:                  "default weights",
-			llmResponse:           `{"professionalism": "C", "kindness": "D", "clarity": "C", "helpfulness": "D"}`,
+			llmResponse:           `{"professionalism": "C", "kindness": "B", "clarity": "C", "helpfulness": "B"}`,
 			input:                 "question",
 			output:                "Answer here",
 			expected:              "",
 			weights:               [4]float64{0.0, 0.0, 0.0, 0.0}, // Should default to equal weights
 			wantScore:             0.625,                          // 0.25*0.5 + 0.25*0.75 + 0.25*0.5 + 0.25*0.75 = 0.625
 			wantProfChoice:        "C",
-			wantKindChoice:        "D",
+			wantKindChoice:        "B",
 			wantClarityChoice:     "C",
-			wantHelpfulnessChoice: "D",
+			wantHelpfulnessChoice: "B",
 			wantProfScore:         0.5,
 			wantKindScore:         0.75,
 			wantClarityScore:      0.5,
@@ -111,16 +111,16 @@ func TestTonality_Unit(t *testing.T) {
 		},
 		{
 			name:                  "single dimension only",
-			llmResponse:           `{"professionalism": "E", "kindness": "A", "clarity": "A", "helpfulness": "A"}`,
+			llmResponse:           `{"professionalism": "A", "kindness": "E", "clarity": "E", "helpfulness": "E"}`,
 			input:                 "formal inquiry",
 			output:                "Professional response",
 			expected:              "",
 			weights:               [4]float64{1.0, 0.0, 0.0, 0.0}, // Only professionalism matters
 			wantScore:             1.0,                            // 1.0*1.0 + 0.0*0.0 + 0.0*0.0 + 0.0*0.0 = 1.0
-			wantProfChoice:        "E",
-			wantKindChoice:        "A",
-			wantClarityChoice:     "A",
-			wantHelpfulnessChoice: "A",
+			wantProfChoice:        "A",
+			wantKindChoice:        "E",
+			wantClarityChoice:     "E",
+			wantHelpfulnessChoice: "E",
 			wantProfScore:         1.0,
 			wantKindScore:         0.0,
 			wantClarityScore:      0.0,
@@ -128,16 +128,16 @@ func TestTonality_Unit(t *testing.T) {
 		},
 		{
 			name:                  "clarity and helpfulness only",
-			llmResponse:           `{"professionalism": "A", "kindness": "A", "clarity": "E", "helpfulness": "E"}`,
+			llmResponse:           `{"professionalism": "E", "kindness": "E", "clarity": "A", "helpfulness": "A"}`,
 			input:                 "educational content",
 			output:                "Clear and helpful response",
 			expected:              "",
 			weights:               [4]float64{0.0, 0.0, 0.5, 0.5}, // Only clarity and helpfulness
 			wantScore:             1.0,                            // 0.0*0.0 + 0.0*0.0 + 0.5*1.0 + 0.5*1.0 = 1.0
-			wantProfChoice:        "A",
-			wantKindChoice:        "A",
-			wantClarityChoice:     "E",
-			wantHelpfulnessChoice: "E",
+			wantProfChoice:        "E",
+			wantKindChoice:        "E",
+			wantClarityChoice:     "A",
+			wantHelpfulnessChoice: "A",
 			wantProfScore:         0.0,
 			wantKindScore:         0.0,
 			wantClarityScore:      1.0,
@@ -168,24 +168,32 @@ func TestTonality_Unit(t *testing.T) {
 			wantScore:   0.0,
 		},
 		{
-			name:        "threshold test - below threshold",
-			llmResponse: `{"professionalism": "B", "kindness": "E", "clarity": "E", "helpfulness": "E"}`,
-			input:       "professional inquiry",
-			output:      "Somewhat professional response",
-			expected:    "",
-			weights:     [4]float64{1.0, 0.0, 0.0, 0.0}, // Only professionalism matters
-			threshold:   0.5,                            // Threshold above B (0.25)
-			wantScore:   0.0,                            // Should be 0 due to threshold
+			name:                 "threshold test - below threshold",
+			llmResponse:          `{"professionalism": "C", "kindness": "A", "clarity": "A", "helpfulness": "A"}`,
+			input:                "professional inquiry",
+			output:               "Somewhat professional response",
+			expected:             "",
+			weights:              [4]float64{0.25, 0.25, 0.25, 0.25},
+			threshold:            0.6, // Threshold above C (0.5)
+			wantScore:            0.0, // Should be 0 due to threshold
+			wantProfScore:        0.5,
+			wantKindScore:        1.0,
+			wantClarityScore:     1.0,
+			wantHelpfulnessScore: 1.0,
 		},
 		{
-			name:        "threshold test - above threshold",
-			llmResponse: `{"professionalism": "D", "kindness": "E", "clarity": "E", "helpfulness": "E"}`,
-			input:       "professional inquiry",
-			output:      "Professional response",
-			expected:    "",
-			weights:     [4]float64{1.0, 0.0, 0.0, 0.0}, // Only professionalism matters
-			threshold:   0.5,                            // Threshold below D (0.75)
-			wantScore:   0.75,                           // Should be normal score
+			name:                 "threshold test - above threshold",
+			llmResponse:          `{"professionalism": "B", "kindness": "E", "clarity": "E", "helpfulness": "E"}`,
+			input:                "professional inquiry",
+			output:               "Professional response",
+			expected:             "",
+			weights:              [4]float64{1.0, 0.0, 0.0, 0.0}, // Only professionalism matters
+			threshold:            0.5,                            // Threshold below B (0.75)
+			wantScore:            0.75,                           // Should be normal score
+			wantProfScore:        0.75,
+			wantKindScore:        0.0,
+			wantClarityScore:     0.0,
+			wantHelpfulnessScore: 0.0,
 		},
 	}
 

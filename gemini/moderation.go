@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/datar-psa/go-eval/interfaces"
+	"github.com/datar-psa/goeval"
 )
 
 // GoogleCloudOptions configures the Google Cloud Natural Language moderation provider
@@ -27,12 +27,12 @@ type GoogleCloudProvider struct {
 }
 
 // NewGoogleCloudProvider creates a new Google Cloud Natural Language moderation provider
-func NewGoogleCloudProvider(opts GoogleCloudOptions) interfaces.ModerationProvider {
+func NewGoogleCloudProvider(opts GoogleCloudOptions) goeval.ModerationProvider {
 	return &GoogleCloudProvider{opts: opts}
 }
 
 // Moderate analyzes content for safety using Google Cloud Natural Language API
-func (p *GoogleCloudProvider) Moderate(ctx context.Context, content string) (*interfaces.ModerationResult, error) {
+func (p *GoogleCloudProvider) Moderate(ctx context.Context, content string) (*goeval.ModerationResult, error) {
 	if p.opts.HTTPClient == nil {
 		return nil, fmt.Errorf("HTTP client is required")
 	}
@@ -94,19 +94,19 @@ func (p *GoogleCloudProvider) Moderate(ctx context.Context, content string) (*in
 	}
 
 	// Map Google Cloud categories to standardized names
-	categories := make([]interfaces.ModerationCategory, 0, len(apiResponse.ModerationCategories))
+	categories := make([]goeval.ModerationCategory, 0, len(apiResponse.ModerationCategories))
 
 	for _, category := range apiResponse.ModerationCategories {
 		// Map Google Cloud category names to developer-friendly names
 		standardizedName := mapCategoryName(category.Name)
 
-		categories = append(categories, interfaces.ModerationCategory{
+		categories = append(categories, goeval.ModerationCategory{
 			Name:       standardizedName,
 			Confidence: category.Confidence,
 		})
 	}
 
-	return &interfaces.ModerationResult{
+	return &goeval.ModerationResult{
 		Categories: categories,
 	}, nil
 }

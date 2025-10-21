@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"math"
 
-	goeval "github.com/datar-psa/go-eval"
-	"github.com/datar-psa/go-eval/interfaces"
+	"github.com/datar-psa/goeval"
 )
 
 // EmbeddingSimilarityOptions configures the EmbeddingSimilarity scorer
@@ -16,7 +15,7 @@ type EmbeddingSimilarityOptions struct {
 
 // EmbeddingSimilarity returns a scorer that measures semantic similarity using embeddings
 // It computes cosine similarity between the output and expected text embeddings
-func EmbeddingSimilarity(embedder interfaces.Embedder, opts EmbeddingSimilarityOptions) goeval.Scorer {
+func EmbeddingSimilarity(embedder goeval.Embedder, opts EmbeddingSimilarityOptions) goeval.Scorer {
 	return &embeddingSimilarityScorer{
 		opts:     opts,
 		embedder: embedder,
@@ -25,7 +24,7 @@ func EmbeddingSimilarity(embedder interfaces.Embedder, opts EmbeddingSimilarityO
 
 type embeddingSimilarityScorer struct {
 	opts     EmbeddingSimilarityOptions
-	embedder interfaces.Embedder
+	embedder goeval.Embedder
 }
 
 func (s *embeddingSimilarityScorer) Score(ctx context.Context, in goeval.ScoreInputs) goeval.Score {

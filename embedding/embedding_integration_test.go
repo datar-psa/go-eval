@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	goeval "github.com/datar-psa/go-eval"
-	"github.com/datar-psa/go-eval/internal/testutils"
+	goeval "github.com/datar-psa/goeval"
+	"github.com/datar-psa/goeval/internal/testutils"
 )
 
 // TestEmbeddingSimilarity_Integration tests the EmbeddingSimilarity scorer with real Gemini embeddings API

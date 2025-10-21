@@ -1,4 +1,4 @@
-module github.com/datar-psa/go-eval
+module github.com/datar-psa/goeval
 
 go 1.25.2
 

@@ -12,7 +12,7 @@ import (
 	"golang.org/x/oauth2/google"
 	"google.golang.org/genai"
 
-	"github.com/datar-psa/go-eval/gemini"
+	"github.com/datar-psa/goeval/gemini"
 )
 
 // ShouldUpdate returns true if tests should update cached HTTP responses

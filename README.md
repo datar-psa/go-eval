@@ -1,4 +1,4 @@
-# go-eval
+# goeval
 
 A Go library for fast, automated evaluation of Large Language Model (LLM) outputs, inspired by Braintrust's [autoevals](https://github.com/braintrustdata/autoevals).
 
@@ -25,9 +25,9 @@ import (
     "context"
     "fmt"
 
-    goeval "github.com/datar-psa/go-eval"
-    "github.com/datar-psa/go-eval/gemini"
-    "github.com/datar-psa/go-eval/llmjudge"
+    goeval "github.com/datar-psa/goeval"
+    "github.com/datar-psa/goeval/gemini"
+    "github.com/datar-psa/goeval/llmjudge"
 )
 
 func main() {
@@ -59,7 +59,7 @@ func main() {
 
 Sophisticated evaluations using language models as judges.
 
-**Package:** `github.com/datar-psa/go-eval/llmjudge`
+**Package:** `github.com/datar-psa/goeval/llmjudge`
 
 | Scorer     | Description                                                                 |
 |------------|-----------------------------------------------------------------------------|
@@ -71,7 +71,7 @@ Sophisticated evaluations using language models as judges.
 
 Fast, rule-based scorers that don't require LLMs.
 
-**Package:** `github.com/datar-psa/go-eval/heuristic`
+**Package:** `github.com/datar-psa/goeval/heuristic`
 
 | Scorer     | Description                                 |
 |------------|---------------------------------------------|
@@ -81,7 +81,7 @@ Fast, rule-based scorers that don't require LLMs.
 
 Semantic similarity using vector embeddings.
 
-**Package:** `github.com/datar-psa/go-eval/embedding`
+**Package:** `github.com/datar-psa/goeval/embedding`
 
 | Scorer             | Description                                    |
 |--------------------|------------------------------------------------|

@@ -4,8 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	goeval "github.com/datar-psa/go-eval"
-	"github.com/datar-psa/go-eval/interfaces"
+	"github.com/datar-psa/goeval"
 )
 
 // TonalityOptions configures the Tonality scorer
@@ -24,7 +23,7 @@ type TonalityOptions struct {
 // Tonality returns a scorer that evaluates professionalism, kindness, clarity, and helpfulness
 // in a single LLM-judge call using anchored A–E categories.
 // The final score is a weighted blend of the dimensions, normalized to [0,1].
-func Tonality(llm interfaces.LLMGenerator, opts TonalityOptions) goeval.Scorer {
+func Tonality(llm goeval.LLMGenerator, opts TonalityOptions) goeval.Scorer {
 	return &tonalityScorer{
 		opts: opts,
 		llm:  llm,
@@ -33,7 +32,7 @@ func Tonality(llm interfaces.LLMGenerator, opts TonalityOptions) goeval.Scorer {
 
 type tonalityScorer struct {
 	opts TonalityOptions
-	llm  interfaces.LLMGenerator
+	llm  goeval.LLMGenerator
 }
 
 const tonalityPromptTemplate = `You are evaluating the quality of an AI response across multiple dimensions. Be deterministic and concise.
@@ -45,29 +44,29 @@ const tonalityPromptTemplate = `You are evaluating the quality of an AI response
 
 Dimension anchors (use these precise anchors, not your own):
 - Professionalism:
-  A: casual/slang, confrontational, imprecise; chaotic formatting
-  B: frequent informality; repeated imprecision
-  C: generally professional; minor informality/sloppiness
-  D: consistently professional; precise and neutral
-  E: highly professional; precise, neutral, impeccably formatted
+  A: highly professional; precise, neutral, impeccably formatted (EXCELLENT)
+  B: consistently professional; precise and neutral (VERY GOOD)
+  C: generally professional; minor informality/sloppiness (GOOD)
+  D: frequent informality; repeated imprecision (FAIR)
+  E: casual/slang, confrontational, imprecise; chaotic formatting (POOR)
 - Kindness:
-  A: hostile, shaming, dismissive
-  B: occasionally harsh/blaming
-  C: neutral/polite
-  D: empathetic, supportive
-  E: exemplary empathy and care
+  A: exemplary empathy and care (EXCELLENT)
+  B: empathetic, supportive (VERY GOOD)
+  C: neutral/polite (GOOD)
+  D: occasionally harsh/blaming (FAIR)
+  E: hostile, shaming, dismissive (POOR)
 - Clarity:
-  A: hard to understand; disorganized
-  B: somewhat unclear; weak structure
-  C: understandable; some redundancy
-  D: clear, well-structured
-  E: exceptionally clear; concise and well structured
+  A: exceptionally clear; concise and well structured (EXCELLENT)
+  B: clear, well-structured (VERY GOOD)
+  C: understandable; some redundancy (GOOD)
+  D: somewhat unclear; weak structure (FAIR)
+  E: hard to understand; disorganized (POOR)
 - Helpfulness:
-  A: off-topic; no actionable guidance
-  B: partially relevant; little actionability
-  C: addresses request; limited actionability
-  D: directly addresses request; actionable steps
-  E: fully addresses request; step-by-step; anticipates edge cases
+  A: fully addresses request; step-by-step; anticipates edge cases (EXCELLENT)
+  B: directly addresses request; actionable steps (VERY GOOD)
+  C: addresses request; limited actionability (GOOD)
+  D: partially relevant; little actionability (FAIR)
+  E: off-topic; no actionable guidance (POOR)
 
 Instructions:
 - Rate each dimension independently with one of A, B, C, D, E.
@@ -95,22 +94,22 @@ func (s *tonalityScorer) Score(ctx context.Context, in goeval.ScoreInputs) goeva
 			"professionalism": map[string]interface{}{
 				"type":        "string",
 				"enum":        []string{"A", "B", "C", "D", "E"},
-				"description": "Professionalism rating (A–E) with anchored definitions",
+				"description": "Professionalism rating (A=EXCELLENT, E=POOR) with anchored definitions",
 			},
 			"kindness": map[string]interface{}{
 				"type":        "string",
 				"enum":        []string{"A", "B", "C", "D", "E"},
-				"description": "Kindness rating (A–E) with anchored definitions",
+				"description": "Kindness rating (A=EXCELLENT, E=POOR) with anchored definitions",
 			},
 			"clarity": map[string]interface{}{
 				"type":        "string",
 				"enum":        []string{"A", "B", "C", "D", "E"},
-				"description": "Clarity rating (A–E) with anchored definitions",
+				"description": "Clarity rating (A=EXCELLENT, E=POOR) with anchored definitions",
 			},
 			"helpfulness": map[string]interface{}{
 				"type":        "string",
 				"enum":        []string{"A", "B", "C", "D", "E"},
-				"description": "Helpfulness rating (A–E) with anchored definitions",
+				"description": "Helpfulness rating (A=EXCELLENT, E=POOR) with anchored definitions",
 			},
 
 			// Optional confidences (0.0–1.0)
@@ -179,13 +178,13 @@ func (s *tonalityScorer) Score(ctx context.Context, in goeval.ScoreInputs) goeva
 	}
 	choices[3] = helpfulnessChoice
 
-	// Map A–E to [0,1]
+	// Map A–E to [0,1] using school-style grading (A=best, E=worst)
 	choiceToScore := map[string]float64{
-		"A": 0.0,
-		"B": 0.25,
+		"A": 1.0,
+		"B": 0.75,
 		"C": 0.5,
-		"D": 0.75,
-		"E": 1.0,
+		"D": 0.25,
+		"E": 0.0,
 	}
 
 	// Base LLM scores per dimension

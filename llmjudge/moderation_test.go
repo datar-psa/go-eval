@@ -5,17 +5,16 @@ import (
 	"fmt"
 	"testing"
 
-	goeval "github.com/datar-psa/go-eval"
-	"github.com/datar-psa/go-eval/interfaces"
+	"github.com/datar-psa/goeval"
 )
 
 // mockModerationProvider is a simple mock for unit tests
 type mockModerationProvider struct {
-	result *interfaces.ModerationResult
+	result *goeval.ModerationResult
 	err    error
 }
 
-func (m *mockModerationProvider) Moderate(ctx context.Context, content string) (*interfaces.ModerationResult, error) {
+func (m *mockModerationProvider) Moderate(ctx context.Context, content string) (*goeval.ModerationResult, error) {
 	if m.err != nil {
 		return nil, m.err
 	}
@@ -27,7 +26,7 @@ func TestModeration_Unit(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		mockResult  *interfaces.ModerationResult
+		mockResult  *goeval.ModerationResult
 		mockErr     error
 		input       string
 		output      string
@@ -41,8 +40,8 @@ func TestModeration_Unit(t *testing.T) {
 	}{
 		{
 			name: "safe content",
-			mockResult: &interfaces.ModerationResult{
-				Categories: []interfaces.ModerationCategory{
+			mockResult: &goeval.ModerationResult{
+				Categories: []goeval.ModerationCategory{
 					{Name: "Toxic", Confidence: 0.1},
 					{Name: "Violent", Confidence: 0.05},
 					{Name: "Sexual", Confidence: 0.0},
@@ -58,8 +57,8 @@ func TestModeration_Unit(t *testing.T) {
 		},
 		{
 			name: "unsafe content",
-			mockResult: &interfaces.ModerationResult{
-				Categories: []interfaces.ModerationCategory{
+			mockResult: &goeval.ModerationResult{
+				Categories: []goeval.ModerationCategory{
 					{Name: "Toxic", Confidence: 0.8},
 					{Name: "Violent", Confidence: 0.3},
 					{Name: "Sexual", Confidence: 0.0},
@@ -75,8 +74,8 @@ func TestModeration_Unit(t *testing.T) {
 		},
 		{
 			name: "multiple flagged categories",
-			mockResult: &interfaces.ModerationResult{
-				Categories: []interfaces.ModerationCategory{
+			mockResult: &goeval.ModerationResult{
+				Categories: []goeval.ModerationCategory{
 					{Name: "Toxic", Confidence: 0.7},
 					{Name: "Violent", Confidence: 0.6},
 					{Name: "Sexual", Confidence: 0.0},
@@ -92,8 +91,8 @@ func TestModeration_Unit(t *testing.T) {
 		},
 		{
 			name: "custom threshold",
-			mockResult: &interfaces.ModerationResult{
-				Categories: []interfaces.ModerationCategory{
+			mockResult: &goeval.ModerationResult{
+				Categories: []goeval.ModerationCategory{
 					{Name: "Toxic", Confidence: 0.3},
 					{Name: "Violent", Confidence: 0.2},
 				},
@@ -108,8 +107,8 @@ func TestModeration_Unit(t *testing.T) {
 		},
 		{
 			name: "specific categories only",
-			mockResult: &interfaces.ModerationResult{
-				Categories: []interfaces.ModerationCategory{
+			mockResult: &goeval.ModerationResult{
+				Categories: []goeval.ModerationCategory{
 					{Name: "Toxic", Confidence: 0.8},
 					{Name: "Violent", Confidence: 0.6},
 					{Name: "Sexual", Confidence: 0.0},
