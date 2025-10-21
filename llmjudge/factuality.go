@@ -75,7 +75,7 @@ func (s *factualityScorer) Score(ctx context.Context, in goeval.ScoreInputs) goe
 			"choice": map[string]interface{}{
 				"type":        "string",
 				"enum":        []string{"A", "B", "C", "D", "E"},
-				"description": "The factuality assessment choice",
+				"description": "The factuality assessment choice: (A) subset and consistent, (B) superset and consistent, (C) same details, (D) disagreement, (E) differences don't matter",
 			},
 			"explanation": map[string]interface{}{
 				"type":        "string",

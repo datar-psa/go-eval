@@ -1,9 +1,0 @@
-POST https://aiplatform.googleapis.com/v1beta1/projects/datar-testing/locations/global/publishers/google/models/gemini-2.5-flash:generateContent HTTP/1.1
-Host: aiplatform.googleapis.com
-User-Agent: google-genai-sdk/1.31.0 gl-go/go1.25.3
-Content-Length: 1499
-Authorization: SANITIZED
-Content-Type: application/json
-X-Goog-Api-Client: google-genai-sdk/1.31.0 gl-go/go1.25.3
-
-{"contents":[{"parts":[{"text":"You are evaluating the quality of an AI response across multiple dimensions.\n\n[BEGIN DATA]\n[Context]: support request\n[Response]: Thank you for contacting us. I'm here to help you with your request and will do my best to resolve this issue.\n[END DATA]\n\nDefinitions:\n- Professionalism: clarity, formality, appropriateness to context, respectful language, precision; avoids slang/exaggeration and personal attacks.\n- Kindness: empathy, warmth, supportive and non-judgmental language; avoids blame or harshness.\n- Clarity: clear, concise, easy to understand; well-structured and organized.\n- Helpfulness: provides useful, actionable information; addresses the user's needs effectively.\n\nRate each dimension independently using these categories:\n(A) Unacceptable\n(B) Below acceptable\n(C) Adequate\n(D) Good\n(E) Excellent\n\nProvide your assessment with ratings for each dimension."}],"role":"user"}],"generationConfig":{"responseMimeType":"application/json","responseSchema":{"properties":{"clarity":{"description":"Clarity rating","enum":["A","B","C","D","E"],"type":"string"},"helpfulness":{"description":"Helpfulness rating","enum":["A","B","C","D","E"],"type":"string"},"kindness":{"description":"Kindness rating","enum":["A","B","C","D","E"],"type":"string"},"professionalism":{"description":"Professionalism rating","enum":["A","B","C","D","E"],"type":"string"}},"required":["professionalism","kindness","clarity","helpfulness"],"type":"object"}}}

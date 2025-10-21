@@ -2,11 +2,13 @@
 
 A Go library for fast, automated evaluation of Large Language Model (LLM) outputs, inspired by Braintrust's [autoevals](https://github.com/braintrustdata/autoevals).
 
-## Installation
+## Features
 
-```bash
-go get github.com/datar-psa/go-eval
-```
+- Simple, consistent scoring API returning scores in [0.0, 1.0]
+- LLM-as-a-judge evaluators: factuality, tonality, and moderation
+- Heuristic and embedding-based evaluators for speed and semantics
+- Structured outputs from LLM judges for debuggability (choices, confidences, evidence)
+- Support for Google Vertex AI (Gemini) via a pluggable generator/provider (more providers planned)
 
 ## How Scoring Works
 
@@ -16,44 +18,42 @@ All scorers follow a simple design pattern:
 
 The scorer compares `output` against `expected` and returns a score between 0.0 and 1.0, where 1.0 is the best possible score.
 
-## Quick Start
+## Getting Started
 
 ```go
 import (
+    "context"
+    "fmt"
+
     goeval "github.com/datar-psa/go-eval"
-    "github.com/datar-psa/go-eval/heuristic"
+    "github.com/datar-psa/go-eval/gemini"
+    "github.com/datar-psa/go-eval/llmjudge"
 )
 
-scorer := heuristic.ExactMatch(heuristic.ExactMatchOptions{
-    CaseInsensitive: true,
-    TrimWhitespace:  true,
-})
+func main() {
+    ctx := context.Background()
 
-result := scorer.Score(ctx, goeval.ScoreInputs{Output: "4", Expected: "4"})
-fmt.Printf("Score: %.2f\n", result.Score) // 1.00
+    // Create LLM generator (Vertex AI Gemini shown as an example)
+    gen := gemini.NewGenerator(genaiClient, "publishers/google/models/gemini-2.5-flash")
+
+    // Create the Factuality scorer
+    scorer := llmjudge.Factuality(gen, llmjudge.FactualityOptions{})
+
+    // Score the model output against an expected answer, with the original question as input
+    result := scorer.Score(ctx, goeval.ScoreInputs{
+        Input:    "What is the capital of France?",
+        Output:   "Paris",
+        Expected: "Paris",
+    })
+
+    if result.Error != nil {
+        panic(result.Error)
+    }
+    fmt.Printf("Score: %.2f, choice=%v\n", result.Score, result.Metadata["choice"])
+}
 ```
 
-## Categories
-
-### Heuristic Evaluations
-
-Fast, rule-based scorers that don't require LLMs.
-
-**Package:** `github.com/datar-psa/go-eval/heuristic`
-
-| Scorer | Description |
-|--------|-------------|
-| `ExactMatch` | Checks if output exactly matches expected value |
-
-**Example:**
-```go
-import "github.com/datar-psa/go-eval/heuristic"
-
-scorer := heuristic.ExactMatch(heuristic.ExactMatchOptions{
-    CaseInsensitive: true,
-    TrimWhitespace:  true,
-})
-```
+## Scorers
 
 ### LLM-as-a-Judge Evaluations
 
@@ -61,43 +61,21 @@ Sophisticated evaluations using language models as judges.
 
 **Package:** `github.com/datar-psa/go-eval/llmjudge`
 
-| Scorer | Description |
-|--------|-------------|
-| `Factuality` | Evaluates factual consistency using chain-of-thought reasoning |
-| `ToneRubric` | Evaluates professionalism, kindness, clarity, and helpfulness using rubric-based scoring |
-| `Moderation` | Evaluates content safety using moderation providers (e.g., Google Cloud Natural Language API) |
+| Scorer     | Description                                                                 |
+|------------|-----------------------------------------------------------------------------|
+| Factuality | LLM judge comparing Output vs Expected for factual consistency               |
+| Tonality   | LLM judge for professionalism, kindness, clarity, helpfulness (A–E anchors)  |
+| Moderation | Content safety via moderation provider; 1.0 safe, 0.0 unsafe                |
 
-**Example:**
-```go
-import (
-    "github.com/datar-psa/go-eval/llmjudge"
-    "github.com/datar-psa/go-eval/gemini"
-)
+### Heuristic Evaluations
 
-llmGen := gemini.NewGenerator(genaiClient, "publishers/google/models/gemini-2.5-flash")
-scorer := llmjudge.Factuality(llmjudge.FactualityOptions{LLM: llmGen})
-```
+Fast, rule-based scorers that don't require LLMs.
 
-**ToneRubric Example:**
-```go
-import (
-    "github.com/datar-psa/go-eval/llmjudge"
-    "github.com/datar-psa/go-eval/gemini"
-)
+**Package:** `github.com/datar-psa/go-eval/heuristic`
 
-llmGen := gemini.NewGenerator(genaiClient, "publishers/google/models/gemini-2.5-flash")
-scorer := llmjudge.ToneRubric(llmjudge.ToneRubricOptions{
-    LLM:                   llmGen,
-    ProfessionalismWeight: 0.6, // Optional, defaults to 0.5 if both are 0
-    KindnessWeight:        0.4, // Optional, defaults to 0.5 if both are 0
-    // Note: If one weight is 0, that dimension is excluded from scoring
-})
-
-result := scorer.Score(ctx, goeval.ScoreInputs{Output: "I understand your frustration..."})
-// result.Score = weighted composite (0.0-1.0)
-// result.Metadata["professionalism.choice"] = "D" (A-E)
-// result.Metadata["kindness.choice"] = "E" (A-E)
-```
+| Scorer     | Description                                 |
+|------------|---------------------------------------------|
+| ExactMatch | Simple equality (configurable case/whitespace) |
 
 ### Embedding Evaluations
 
@@ -105,118 +83,78 @@ Semantic similarity using vector embeddings.
 
 **Package:** `github.com/datar-psa/go-eval/embedding`
 
-| Scorer | Description |
-|--------|-------------|
-| `EmbeddingSimilarity` | Measures semantic similarity using cosine similarity of embeddings |
-
-**Example:**
-```go
-import (
-    "github.com/datar-psa/go-eval/embedding"
-    "github.com/datar-psa/go-eval/gemini"
-)
-
-embedder := gemini.NewEmbedder(genaiClient, "text-embedding-005")
-scorer := embedding.EmbeddingSimilarity(embedding.EmbeddingSimilarityOptions{
-    Embedder: embedder,
-})
-
-// Perfect for comparing question similarity
-result := scorer.Score(ctx, goeval.ScoreInputs{
-    Output: "What is the type of the leave?",
-    Expected: "Please provide type of the leave",
-})
-// Score: ~0.9-1.0 (highly similar semantically)
-```
-
-## Development
-
-### Testing with HTTP Caching
-
-Use [hypert](https://github.com/areknoster/hypert) to cache LLM requests in tests:
-
-```go
-hypertClient := hypert.TestClient(t, false, // false = replay mode
-    hypert.WithNamingScheme(namingScheme),
-)
-
-genaiClient, _ := genai.NewClient(ctx, &genai.ClientConfig{
-    Backend:    genai.BackendVertexAI,
-    HTTPClient: hypertClient, // Cached requests
-})
-```
-
-Update cache: `UPDATE_TESTS=true go test`
+| Scorer             | Description                                    |
+|--------------------|------------------------------------------------|
+| EmbeddingSimilarity | Cosine similarity over embeddings (semantic closeness) |
 
 ## Use Cases
 
-### Question Similarity
-For checking if two questions are semantically similar (e.g., "What is the type of the leave?" vs "Please provide type of the leave"), use **Embedding Similarity**:
+### 1) FAQ Answer Accuracy (Factuality)
+
+Evaluate if an assistant’s answer matches a knowledge base answer.
 
 ```go
-embedder := gemini.NewEmbedder(client, "text-embedding-005")
-scorer := embedding.EmbeddingSimilarity(embedding.EmbeddingSimilarityOptions{
-    Embedder: embedder,
+scorer := llmjudge.Factuality(gen, llmjudge.FactualityOptions{})
+res := scorer.Score(ctx, goeval.ScoreInputs{
+    Input:    "What are store hours on Sundays?",
+    Output:   "We're open 10am–6pm on Sundays.",
+    Expected: "We are open from 10:00 to 18:00 on Sundays.",
 })
+// res.Score in [0..1]; metadata includes {choice, explanation, raw_response}
 ```
 
-### Answer Accuracy
-For checking if an answer is factually correct, use **Factuality**:
+### 2) Support Reply Tone (Tonality)
+
+Enforce minimum tone quality across all dimensions with a threshold gate.
 
 ```go
-llm := gemini.NewGenerator(client, "publishers/google/models/gemini-2.5-flash")
-scorer := llmjudge.Factuality(llmjudge.FactualityOptions{LLM: llm})
+tonality := llmjudge.Tonality(gen, llmjudge.TonalityOptions{
+    ProfessionalismWeight: 0.25,
+    KindnessWeight:        0.25,
+    ClarityWeight:         0.25,
+    HelpfulnessWeight:     0.25,
+    Threshold:             0.4, // if any used dimension < 0.4, overall score becomes 0
+})
+
+res := tonality.Score(ctx, goeval.ScoreInputs{
+    Input:  "Customer complaint about delayed shipment",
+    Output: "I’m sorry for the delay — here’s what we’re doing next...",
+})
+// res.Metadata contains per-dimension choices/scores and applied weights
 ```
 
-### Response Tone
-For evaluating the professionalism, kindness, clarity, and helpfulness of responses, use **ToneRubric**:
+### 3) Chat Moderation (Moderation)
+
+Block unsafe replies and steer away from sensitive topics (e.g., religion/politics).
 
 ```go
-llm := gemini.NewGenerator(client, "publishers/google/models/gemini-2.5-flash")
-scorer := llmjudge.ToneRubric(llmjudge.ToneRubricOptions{
-    LLM:     llm,
-    Weights: [4]float64{0.3, 0.2, 0.3, 0.2}, // [professionalism, kindness, clarity, helpfulness]
+provider := gemini.NewGoogleCloudProvider(gemini.GoogleCloudOptions{ /* http client + project */ })
+moderation := llmjudge.Moderation(provider, llmjudge.ModerationOptions{
+    Threshold:  0.5,
+    Categories: []string{"Toxic", "Derogatory", "Violent", "Insult", "ReligionBelief", "Politics"},
 })
 
-// Single dimension scoring examples:
-// Professionalism only:
-scorer := llmjudge.ToneRubric(llmjudge.ToneRubricOptions{
-    LLM:     llm,
-    Weights: [4]float64{1.0, 0.0, 0.0, 0.0}, // Only professionalism matters
-})
-
-// Kindness only:
-scorer := llmjudge.ToneRubric(llmjudge.ToneRubricOptions{
-    LLM:     llm,
-    Weights: [4]float64{0.0, 1.0, 0.0, 0.0}, // Only kindness matters
-})
+res := moderation.Score(ctx, goeval.ScoreInputs{Output: "Let’s discuss your religion and political views..."})
+// res.Score = 0.0 if unsafe; metadata includes flagged categories and is_safe=false
 ```
 
-### Content Safety
-For evaluating the safety and appropriateness of content, use **Moderation**:
+### 4) Intent Similarity (Embeddings)
+
+Group similar user requests or route to the right workflow.
 
 ```go
-import (
-    "github.com/datar-psa/go-eval/gemini"
-    "net/http"
-)
-
-provider := gemini.NewGoogleCloudProvider(gemini.GoogleCloudOptions{
-    HTTPClient: http.DefaultClient,
-    ProjectID:  "your-project-id", // or use APIKey instead
+sim := embedding.EmbeddingSimilarity(embedding.EmbeddingSimilarityOptions{Embedder: embedder})
+res := sim.Score(ctx, goeval.ScoreInputs{
+    Output:   "Reset my password",
+    Expected: "I can’t log in to my account",
 })
-
-scorer := llmjudge.Moderation(llmjudge.ModerationOptions{
-    ModerationProvider: provider,
-    Threshold:          0.5, // Adjust based on your safety requirements
-})
+// Higher scores indicate closer semantic intent
 ```
-
 
 ## Running Tests
 
 ```bash
 go test -short              # Unit tests only
 go test                     # All tests
-UPDATE_TESTS=true go test   # Update integration test cache
+UPDATE_TESTS=true go test   # Update integration test cache (LLM requests)
 ```

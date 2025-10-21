@@ -1,0 +1,50 @@
+HTTP/2.0 200 OK
+Alt-Svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+Content-Type: application/json; charset=UTF-8
+Date: Tue, 21 Oct 2025 13:28:57 GMT
+Server: scaffolding on HTTPServer2
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "candidates": [
+    {
+      "content": {
+        "role": "model",
+        "parts": [
+          {
+            "text": "{\"professionalism\": \"D\", \"kindness\": \"D\", \"clarity\": \"E\", \"helpfulness\": \"D\", \"clarity_confidence\": 1.0, \"clarity_evidence\": [\"I sincerely apologize for the delay in your order.\", \"I understand how frustrating this must be\", \"we're working to resolve this issue immediately.\"], \"clarity_explanation\": \"Exceptionally clear and concise; directly addresses the complaint without ambiguity.\", \"helpfulness_confidence\": 1.0, \"helpfulness_evidence\": [\"we're working to resolve this issue immediately\", \"Please let me know if there's anything else I can do to help.\"], \"helpfulness_explanation\": \"Directly addresses the complaint, provides reassurance of action, and offers further assistance.\", \"kindness_confidence\": 1.0, \"kindness_evidence\": [\"I sincerely apologize\", \"I understand how frustrating this must be\", \"Please let me know if there's anything else I can do to help.\"], \"kindness_explanation\": \"Shows empathy for the user's frustration and offers further assistance.\", \"professionalism_confidence\": 1.0, \"professionalism_evidence\": [\"I sincerely apologize\", \"we're working to resolve this issue immediately\", \"Please let me know if there's anything else I can do to help.\"]}"
+          }
+        ]
+      },
+      "finishReason": "STOP",
+      "avgLogprobs": -0.3984316207174759
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 542,
+    "candidatesTokenCount": 279,
+    "totalTokenCount": 1508,
+    "trafficType": "ON_DEMAND",
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 542
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 279
+      }
+    ],
+    "thoughtsTokenCount": 687
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "createTime": "2025-10-21T13:28:52.159Z",
+  "responseId": "lIr3aJjaCdP7ld8Pi-K3mQw"
+}

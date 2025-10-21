@@ -94,9 +94,9 @@ func TestFactuality_Integration(t *testing.T) {
 	}
 }
 
-// TestToneRubric_Integration tests the ToneRubric scorer with real Gemini API calls
+// TestTonality_Integration tests the Tonality scorer with real Gemini API calls
 // This test requires valid Google Cloud credentials and uses hypert to cache requests
-func TestToneRubric_Integration(t *testing.T) {
+func TestTonality_Integration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
 	}
@@ -104,7 +104,7 @@ func TestToneRubric_Integration(t *testing.T) {
 	ctx := context.Background()
 
 	// Create Gemini generator using test utilities
-	llmGen := testutils.NewGeminiGenerator(t, testutils.DefaultGeminiTestConfig("tone_rubric"), "publishers/google/models/gemini-2.5-flash")
+	llmGen := testutils.NewGeminiGenerator(t, testutils.DefaultGeminiTestConfig("tonality"), "publishers/google/models/gemini-2.5-flash")
 
 	tests := []struct {
 		name                  string
@@ -143,8 +143,8 @@ func TestToneRubric_Integration(t *testing.T) {
 			expected:              "",
 			professionalismWeight: 0.6,
 			kindnessWeight:        0.4,
-			minScore:              0.4,
-			maxScore:              0.6,
+			minScore:              0.25,
+			maxScore:              0.35,
 		},
 		{
 			name:                  "unprofessional and unkind response",
@@ -161,10 +161,10 @@ func TestToneRubric_Integration(t *testing.T) {
 			input:                 "support request",
 			output:                "Thank you for contacting us. I'm here to help you with your request and will do my best to resolve this issue.",
 			expected:              "",
-			professionalismWeight: 0.0, // Should default to 0.5
-			kindnessWeight:        0.0, // Should default to 0.5
-			minScore:              0.7,
-			maxScore:              1.0,
+			professionalismWeight: 0.0, // Should default to equal weights
+			kindnessWeight:        0.0, // Should default to equal weights
+			minScore:              0.6,
+			maxScore:              0.8,
 		},
 		{
 			name:                  "professionalism only",
@@ -190,24 +190,25 @@ func TestToneRubric_Integration(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			scorer := ToneRubric(llmGen, ToneRubricOptions{
-				Weights: [4]float64{tt.professionalismWeight, tt.kindnessWeight, 0.0, 0.0},
+			scorer := Tonality(llmGen, TonalityOptions{
+				ProfessionalismWeight: tt.professionalismWeight,
+				KindnessWeight:        tt.kindnessWeight,
 			})
 			result := scorer.Score(ctx, goeval.ScoreInputs{Input: tt.input, Output: tt.output, Expected: tt.expected})
 
 			if result.Error != nil {
-				t.Fatalf("ToneRubric.Score() unexpected error = %v", result.Error)
+				t.Fatalf("Tonality.Score() unexpected error = %v", result.Error)
 			}
 
 			if result.Score < tt.minScore || result.Score > tt.maxScore {
-				t.Errorf("ToneRubric.Score() score = %v, want between %v and %v", result.Score, tt.minScore, tt.maxScore)
+				t.Errorf("Tonality.Score() score = %v, want between %v and %v", result.Score, tt.minScore, tt.maxScore)
 				t.Logf("Professionalism choice: %v", result.Metadata["professionalism.choice"])
 				t.Logf("Kindness choice: %v", result.Metadata["kindness.choice"])
 				t.Logf("Raw response: %v", result.Metadata["raw_response"])
 			}
 
-			if result.Name != "ToneRubric" {
-				t.Errorf("ToneRubric.Score() name = %v, want 'ToneRubric'", result.Name)
+			if result.Name != "Tonality" {
+				t.Errorf("Tonality.Score() name = %v, want 'Tonality'", result.Name)
 			}
 
 			// Verify metadata

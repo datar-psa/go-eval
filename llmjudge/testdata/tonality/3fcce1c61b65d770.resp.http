@@ -1,0 +1,50 @@
+HTTP/2.0 200 OK
+Alt-Svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+Content-Type: application/json; charset=UTF-8
+Date: Tue, 21 Oct 2025 13:29:33 GMT
+Server: scaffolding on HTTPServer2
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "candidates": [
+    {
+      "content": {
+        "role": "model",
+        "parts": [
+          {
+            "text": "{\n  \"professionalism\": \"C\",\n  \"kindness\": \"D\",\n  \"clarity\": \"E\",\n  \"helpfulness\": \"C\",\n  \"clarity_confidence\": 0.9,\n  \"clarity_evidence\": [\n    \"I'm so sorry you're going through this.\",\n    \"I'm here for you and we'll get through this together.\"\n  ],\n  \"clarity_explanation\": \"The response is exceptionally clear, concise, and easy to understand, directly conveying its message.\",\n  \"helpfulness_confidence\": 0.8,\n  \"helpfulness_evidence\": [\n    \"I'm here for you\",\n    \"we'll get through this together\"\n  ],\n  \"helpfulness_explanation\": \"The response directly addresses the emotional need for support but offers limited actionable guidance beyond emotional presence.\",\n  \"kindness_confidence\": 0.9,\n  \"kindness_evidence\": [\n    \"I'm so sorry you're going through this.\",\n    \"I'm here for you\",\n    \"we'll get through this together\"\n  ],\n  \"kindness_explanation\": \"The response is empathetic and supportive, clearly expressing care and solidarity.\",\n  \"professionalism_confidence\": 0.8,\n  \"professionalism_evidence\": [\n    \"I'm so sorry you're going through this.\",\n    \"I'm here for you\"\n  ],\n  \"professionalism_explanation\": \"The language is informal but appropriate for a personal support request, maintaining a generally professional tone.\"\n}"
+          }
+        ]
+      },
+      "finishReason": "STOP",
+      "avgLogprobs": -0.33701838852663552
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 516,
+    "candidatesTokenCount": 353,
+    "totalTokenCount": 1478,
+    "trafficType": "ON_DEMAND",
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 516
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 353
+      }
+    ],
+    "thoughtsTokenCount": 609
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "createTime": "2025-10-21T13:29:28.613997Z",
+  "responseId": "uIr3aO28Jb2hmecP1vLF2As"
+}

@@ -1,9 +1,0 @@
-POST https://us-central1-aiplatform.googleapis.com/v1beta1/projects/datar-testing/locations/us-central1/publishers/google/models/gemini-2.5-flash:generateContent HTTP/1.1
-Host: us-central1-aiplatform.googleapis.com
-User-Agent: google-genai-sdk/1.31.0 gl-go/go1.25.2
-Content-Length: 862
-Authorization: SANITIZED
-Content-Type: application/json
-X-Goog-Api-Client: google-genai-sdk/1.31.0 gl-go/go1.25.2
-
-{"contents":[{"parts":[{"text":"You are evaluating both the professionalism and the kindness of an AI response.\n\n[BEGIN DATA]\n[Context]: customer complaint about delayed order\n[Response]: Your order has been delayed due to shipping issues. We are processing your request and will update you when resolved.\n[END DATA]\n\nDefinitions:\n- Professionalism: clarity, formality, appropriateness to context, respectful language, precision; avoids slang/exaggeration and personal attacks.\n- Kindness: empathy, warmth, supportive and non-judgmental language; avoids blame or harshness.\n\nRate each dimension independently using these categories:\n(A) Unacceptable\n(B) Below acceptable\n(C) Adequate\n(D) Good\n(E) Excellent\n\nAnswer with exactly:\nPROFESSIONALISM: \u003cA|B|C|D|E\u003e\nKINDNESS: \u003cA|B|C|D|E\u003e"}],"role":"user"}],"generationConfig":{}}

@@ -1,0 +1,50 @@
+HTTP/2.0 200 OK
+Alt-Svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+Content-Type: application/json; charset=UTF-8
+Date: Tue, 21 Oct 2025 13:29:04 GMT
+Server: scaffolding on HTTPServer2
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "candidates": [
+    {
+      "content": {
+        "role": "model",
+        "parts": [
+          {
+            "text": "{\n  \"professionalism\": \"D\",\n  \"kindness\": \"C\",\n  \"clarity\": \"D\",\n  \"helpfulness\": \"C\",\n  \"clarity_confidence\": 0.9,\n  \"clarity_evidence\": [\n    \"Your order has been delayed due to shipping issues.\",\n    \"We are processing your request and will update you when resolved.\"\n  ],\n  \"clarity_explanation\": \"The message is direct and easy to understand, clearly stating the issue and next steps without ambiguity.\",\n  \"helpfulness_confidence\": 0.8,\n  \"helpfulness_evidence\": [\n    \"Your order has been delayed due to shipping issues.\",\n    \"We are processing your request and will update you when resolved.\"\n  ],\n  \"helpfulness_explanation\": \"It addresses the complaint and states an action, but lacks specific actionable guidance or timeline for the customer.\",\n  \"kindness_confidence\": 0.8,\n  \"kindness_evidence\": [\n    \"Your order has been delayed due to shipping issues.\",\n    \"We are processing your request and will update you when resolved.\"\n  ],\n  \"kindness_explanation\": \"The response is polite and factual but lacks empathy or an apology regarding the delay.\",\n  \"professionalism_confidence\": 0.9,\n  \"professionalism_evidence\": [\n    \"Your order has been delayed due to shipping issues.\",\n    \"We are processing your request and will update you when resolved.\"\n  ],\n  \"professionalism_explanation\": \"The response uses neutral, precise language and maintains a consistently professional tone without informality.\"\n}"
+          }
+        ]
+      },
+      "finishReason": "STOP",
+      "avgLogprobs": -0.45187498280699823
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 513,
+    "candidatesTokenCount": 355,
+    "totalTokenCount": 1470,
+    "trafficType": "ON_DEMAND",
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 513
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 355
+      }
+    ],
+    "thoughtsTokenCount": 602
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "createTime": "2025-10-21T13:28:58.566935Z",
+  "responseId": "mor3aJfNIoWSmecPoKmYqQE"
+}

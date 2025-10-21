@@ -1,0 +1,50 @@
+HTTP/2.0 200 OK
+Alt-Svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+Content-Type: application/json; charset=UTF-8
+Date: Tue, 21 Oct 2025 13:29:10 GMT
+Server: scaffolding on HTTPServer2
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "candidates": [
+    {
+      "content": {
+        "role": "model",
+        "parts": [
+          {
+            "text": "{\n  \"professionalism\": \"A\",\n  \"kindness\": \"D\",\n  \"clarity\": \"E\",\n  \"helpfulness\": \"B\",\n  \"clarity_confidence\": 1.0,\n  \"clarity_evidence\": [\n    \"Oh no! That's so annoying! I totally get why you're upset. Don't worry, we'll figure this out together! 😊\"\n  ],\n  \"clarity_explanation\": \"The response is exceptionally clear, concise, and easy to understand without any ambiguity.\",\n  \"helpfulness_confidence\": 1.0,\n  \"helpfulness_evidence\": [\n    \"Don't worry, we'll figure this out together!\"\n  ],\n  \"helpfulness_explanation\": \"While acknowledging the issue, the response offers reassurance but no concrete steps or actionable guidance.\",\n  \"kindness_confidence\": 1.0,\n  \"kindness_evidence\": [\n    \"I totally get why you're upset.\",\n    \"Don't worry, we'll figure this out together! 😊\"\n  ],\n  \"kindness_explanation\": \"The response expresses empathy and offers support to the customer, creating a reassuring tone.\",\n  \"professionalism_confidence\": 1.0,\n  \"professionalism_evidence\": [\n    \"Oh no!\",\n    \"That's so annoying!\",\n    \"I totally get why you're upset.\",\n    \"😊\"\n  ],\n  \"professionalism_explanation\": \"The language is highly casual, uses slang, and an emoji, making it unprofessional for a customer complaint.\"\n}"
+          }
+        ]
+      },
+      "finishReason": "STOP",
+      "avgLogprobs": -0.36153199101837585
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 523,
+    "candidatesTokenCount": 355,
+    "totalTokenCount": 1616,
+    "trafficType": "ON_DEMAND",
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 523
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 355
+      }
+    ],
+    "thoughtsTokenCount": 738
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "createTime": "2025-10-21T13:29:04.518844Z",
+  "responseId": "oIr3aLzVH4DwmecPnPO00Ag"
+}

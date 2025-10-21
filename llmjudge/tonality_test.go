@@ -35,7 +35,7 @@ func (m *mockLLMGeneratorRubric) StructuredGenerate(ctx context.Context, prompt 
 	return result, nil
 }
 
-func TestToneRubric_Unit(t *testing.T) {
+func TestTonality_Unit(t *testing.T) {
 	ctx := context.Background()
 
 	tests := []struct {
@@ -46,6 +46,7 @@ func TestToneRubric_Unit(t *testing.T) {
 		output                string
 		expected              string
 		weights               [4]float64
+		threshold             float64
 		wantErr               error
 		wantScore             float64
 		wantProfChoice        string
@@ -166,6 +167,26 @@ func TestToneRubric_Unit(t *testing.T) {
 			expected:    "",
 			wantScore:   0.0,
 		},
+		{
+			name:        "threshold test - below threshold",
+			llmResponse: `{"professionalism": "B", "kindness": "E", "clarity": "E", "helpfulness": "E"}`,
+			input:       "professional inquiry",
+			output:      "Somewhat professional response",
+			expected:    "",
+			weights:     [4]float64{1.0, 0.0, 0.0, 0.0}, // Only professionalism matters
+			threshold:   0.5,                            // Threshold above B (0.25)
+			wantScore:   0.0,                            // Should be 0 due to threshold
+		},
+		{
+			name:        "threshold test - above threshold",
+			llmResponse: `{"professionalism": "D", "kindness": "E", "clarity": "E", "helpfulness": "E"}`,
+			input:       "professional inquiry",
+			output:      "Professional response",
+			expected:    "",
+			weights:     [4]float64{1.0, 0.0, 0.0, 0.0}, // Only professionalism matters
+			threshold:   0.5,                            // Threshold below D (0.75)
+			wantScore:   0.75,                           // Should be normal score
+		},
 	}
 
 	for _, tt := range tests {
@@ -175,96 +196,100 @@ func TestToneRubric_Unit(t *testing.T) {
 				err:      tt.llmErr,
 			}
 
-			scorer := ToneRubric(mockLLM, ToneRubricOptions{
-				Weights: tt.weights,
+			scorer := Tonality(mockLLM, TonalityOptions{
+				ProfessionalismWeight: tt.weights[0],
+				KindnessWeight:        tt.weights[1],
+				ClarityWeight:         tt.weights[2],
+				HelpfulnessWeight:     tt.weights[3],
+				Threshold:             tt.threshold,
 			})
 
 			result := scorer.Score(ctx, goeval.ScoreInputs{Input: tt.input, Output: tt.output, Expected: tt.expected})
 
 			if tt.wantErr != nil {
 				if result.Error != tt.wantErr {
-					t.Errorf("ToneRubric.Score() error = %v, wantErr %v", result.Error, tt.wantErr)
+					t.Errorf("Tonality.Score() error = %v, wantErr %v", result.Error, tt.wantErr)
 				}
 			} else if tt.llmErr != nil {
 				if result.Error == nil {
-					t.Error("ToneRubric.Score() expected error but got none")
+					t.Error("Tonality.Score() expected error but got none")
 				}
 			} else if tt.llmResponse != "" && tt.wantErr == nil {
 				if result.Error != nil && tt.name != "invalid JSON response" && tt.name != "missing dimensions" {
-					t.Errorf("ToneRubric.Score() unexpected error = %v", result.Error)
+					t.Errorf("Tonality.Score() unexpected error = %v", result.Error)
 				}
 			}
 
 			if result.Score != tt.wantScore {
-				t.Errorf("ToneRubric.Score() score = %v, wantScore %v", result.Score, tt.wantScore)
+				t.Errorf("Tonality.Score() score = %v, wantScore %v", result.Score, tt.wantScore)
 			}
 
 			if tt.wantProfChoice != "" {
 				if profChoice, ok := result.Metadata["professionalism.choice"].(string); !ok || profChoice != tt.wantProfChoice {
-					t.Errorf("ToneRubric.Score() professionalism.choice = %v, want %v", profChoice, tt.wantProfChoice)
+					t.Errorf("Tonality.Score() professionalism.choice = %v, want %v", profChoice, tt.wantProfChoice)
 				}
 			}
 
 			if tt.wantKindChoice != "" {
 				if kindChoice, ok := result.Metadata["kindness.choice"].(string); !ok || kindChoice != tt.wantKindChoice {
-					t.Errorf("ToneRubric.Score() kindness.choice = %v, want %v", kindChoice, tt.wantKindChoice)
+					t.Errorf("Tonality.Score() kindness.choice = %v, want %v", kindChoice, tt.wantKindChoice)
 				}
 			}
 
 			if tt.wantClarityChoice != "" {
 				if clarityChoice, ok := result.Metadata["clarity.choice"].(string); !ok || clarityChoice != tt.wantClarityChoice {
-					t.Errorf("ToneRubric.Score() clarity.choice = %v, want %v", clarityChoice, tt.wantClarityChoice)
+					t.Errorf("Tonality.Score() clarity.choice = %v, want %v", clarityChoice, tt.wantClarityChoice)
 				}
 			}
 
 			if tt.wantHelpfulnessChoice != "" {
 				if helpfulnessChoice, ok := result.Metadata["helpfulness.choice"].(string); !ok || helpfulnessChoice != tt.wantHelpfulnessChoice {
-					t.Errorf("ToneRubric.Score() helpfulness.choice = %v, want %v", helpfulnessChoice, tt.wantHelpfulnessChoice)
+					t.Errorf("Tonality.Score() helpfulness.choice = %v, want %v", helpfulnessChoice, tt.wantHelpfulnessChoice)
 				}
 			}
 
 			if tt.wantProfScore >= 0 {
 				if profScore, ok := result.Metadata["professionalism.score"].(float64); !ok || profScore != tt.wantProfScore {
-					t.Errorf("ToneRubric.Score() professionalism.score = %v, want %v", profScore, tt.wantProfScore)
+					t.Errorf("Tonality.Score() professionalism.score = %v, want %v", profScore, tt.wantProfScore)
 				}
 			}
 
 			if tt.wantKindScore >= 0 {
 				if kindScore, ok := result.Metadata["kindness.score"].(float64); !ok || kindScore != tt.wantKindScore {
-					t.Errorf("ToneRubric.Score() kindness.score = %v, want %v", kindScore, tt.wantKindScore)
+					t.Errorf("Tonality.Score() kindness.score = %v, want %v", kindScore, tt.wantKindScore)
 				}
 			}
 
 			if tt.wantClarityScore >= 0 {
 				if clarityScore, ok := result.Metadata["clarity.score"].(float64); !ok || clarityScore != tt.wantClarityScore {
-					t.Errorf("ToneRubric.Score() clarity.score = %v, want %v", clarityScore, tt.wantClarityScore)
+					t.Errorf("Tonality.Score() clarity.score = %v, want %v", clarityScore, tt.wantClarityScore)
 				}
 			}
 
 			if tt.wantHelpfulnessScore >= 0 {
 				if helpfulnessScore, ok := result.Metadata["helpfulness.score"].(float64); !ok || helpfulnessScore != tt.wantHelpfulnessScore {
-					t.Errorf("ToneRubric.Score() helpfulness.score = %v, want %v", helpfulnessScore, tt.wantHelpfulnessScore)
+					t.Errorf("Tonality.Score() helpfulness.score = %v, want %v", helpfulnessScore, tt.wantHelpfulnessScore)
 				}
 			}
 
-			if result.Name != "ToneRubric" {
-				t.Errorf("ToneRubric.Score() name = %v, want 'ToneRubric'", result.Name)
+			if result.Name != "Tonality" {
+				t.Errorf("Tonality.Score() name = %v, want 'Tonality'", result.Name)
 			}
 		})
 	}
 }
 
-func TestToneRubric_NoLLM(t *testing.T) {
+func TestTonality_NoLLM(t *testing.T) {
 	ctx := context.Background()
 
-	scorer := ToneRubric(nil, ToneRubricOptions{})
+	scorer := Tonality(nil, TonalityOptions{})
 	result := scorer.Score(ctx, goeval.ScoreInputs{Input: "context", Output: "output", Expected: "expected"})
 
 	if result.Error == nil {
-		t.Error("ToneRubric.Score() expected error when LLM is nil")
+		t.Error("Tonality.Score() expected error when LLM is nil")
 	}
 
 	if result.Score != 0 {
-		t.Errorf("ToneRubric.Score() score = %v, want 0", result.Score)
+		t.Errorf("Tonality.Score() score = %v, want 0", result.Score)
 	}
 }

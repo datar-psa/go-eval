@@ -1,0 +1,50 @@
+HTTP/2.0 200 OK
+Alt-Svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+Content-Type: application/json; charset=UTF-8
+Date: Tue, 21 Oct 2025 13:29:17 GMT
+Server: scaffolding on HTTPServer2
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "candidates": [
+    {
+      "content": {
+        "role": "model",
+        "parts": [
+          {
+            "text": "{\n  \"professionalism\": \"A\",\n  \"kindness\": \"A\",\n  \"clarity\": \"E\",\n  \"helpfulness\": \"A\",\n  \"clarity_confidence\": 0.9,\n  \"clarity_evidence\": [\n    \"That's not our problem.\",\n    \"You should have read the terms.\",\n    \"Deal with it.\"\n  ],\n  \"clarity_explanation\": \"The response is exceptionally clear and concise in its negative message, leaving no ambiguity about its stance.\",\n  \"helpfulness_confidence\": 1.0,\n  \"helpfulness_evidence\": [\n    \"That's not our problem.\",\n    \"Deal with it.\"\n  ],\n  \"helpfulness_explanation\": \"The response offers no actionable guidance or solution, instead completely dismissing the customer's complaint.\",\n  \"kindness_confidence\": 1.0,\n  \"kindness_evidence\": [\n    \"That's not our problem.\",\n    \"You should have read the terms.\",\n    \"Deal with it.\"\n  ],\n  \"kindness_explanation\": \"The response is openly hostile, shaming, and entirely dismissive of the customer's issue, showing no empathy.\",\n  \"professionalism_confidence\": 1.0,\n  \"professionalism_evidence\": [\n    \"That's not our problem.\",\n    \"Deal with it.\"\n  ],\n  \"professionalism_explanation\": \"The response is highly confrontational, uses casual and dismissive language, and lacks any professional decorum.\"\n}"
+          }
+        ]
+      },
+      "finishReason": "STOP",
+      "avgLogprobs": -0.44633914723115808
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 509,
+    "candidatesTokenCount": 340,
+    "totalTokenCount": 1625,
+    "trafficType": "ON_DEMAND",
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 509
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 340
+      }
+    ],
+    "thoughtsTokenCount": 776
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "createTime": "2025-10-21T13:29:11.021374Z",
+  "responseId": "p4r3aP6mAZqdmecPpd3H0Qk"
+}
