@@ -1,0 +1,50 @@
+HTTP/2.0 200 OK
+Alt-Svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+Content-Type: application/json; charset=UTF-8
+Date: Wed, 22 Oct 2025 11:38:09 GMT
+Server: scaffolding on HTTPServer2
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "candidates": [
+    {
+      "content": {
+        "role": "model",
+        "parts": [
+          {
+            "text": "{\n  \"choice\": \"A\",\n  \"explanation\": \"The submitted answer \\\"Paris\\\" is identical to the expert answer \\\"Paris\\\". All factual details are the same.\"\n}"
+          }
+        ]
+      },
+      "finishReason": "STOP",
+      "avgLogprobs": -0.41715121269226074
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 341,
+    "candidatesTokenCount": 40,
+    "totalTokenCount": 441,
+    "trafficType": "ON_DEMAND",
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 341
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 40
+      }
+    ],
+    "thoughtsTokenCount": 60
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "createTime": "2025-10-22T11:38:08.055019Z",
+  "responseId": "IML4aOutA_yO6MEP0IXNwAI"
+}

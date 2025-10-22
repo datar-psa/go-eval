@@ -1,9 +1,0 @@
-POST https://us-central1-aiplatform.googleapis.com/v1beta1/projects/datar-testing/locations/us-central1/publishers/google/models/gemini-2.5-flash:generateContent HTTP/1.1
-Host: us-central1-aiplatform.googleapis.com
-User-Agent: google-genai-sdk/1.31.0 gl-go/go1.25.2
-Content-Length: 906
-Authorization: SANITIZED
-Content-Type: application/json
-X-Goog-Api-Client: google-genai-sdk/1.31.0 gl-go/go1.25.2
-
-{"contents":[{"parts":[{"text":"You are evaluating the factual accuracy of an AI assistant's answer.\n\nInput: What is the capital of France?\nExpected Answer: Paris is the capital of France\nActual Output: Paris is a city in France\n\nPlease evaluate if the actual output is factually consistent with the expected answer.\nConsider the output correct if it conveys the same core facts, even if wording differs.\n\nThink step by step:\n1. Identify the key facts in the expected answer\n2. Check if these facts are present in the actual output\n3. Check if there are any contradicting facts in the actual output\n\nThen provide your final answer as a score from 0 to 10, where:\n- 0 = completely wrong or contradictory\n- 5 = partially correct\n- 10 = fully correct and factually consistent\n\nEnd your response with: \"SCORE: X\" where X is a number from 0 to 10."}],"role":"user"}],"generationConfig":{}}

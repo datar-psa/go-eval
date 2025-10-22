@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/datar-psa/goeval"
+	"github.com/datar-psa/goeval/api"
 )
 
 // TonalityOptions configures the Tonality scorer
@@ -23,7 +23,7 @@ type TonalityOptions struct {
 // Tonality returns a scorer that evaluates professionalism, kindness, clarity, and helpfulness
 // in a single LLM-judge call using anchored A–E categories.
 // The final score is a weighted blend of the dimensions, normalized to [0,1].
-func Tonality(llm goeval.LLMGenerator, opts TonalityOptions) goeval.Scorer {
+func Tonality(llm api.LLMGenerator, opts TonalityOptions) api.Scorer {
 	return &tonalityScorer{
 		opts: opts,
 		llm:  llm,
@@ -32,7 +32,7 @@ func Tonality(llm goeval.LLMGenerator, opts TonalityOptions) goeval.Scorer {
 
 type tonalityScorer struct {
 	opts TonalityOptions
-	llm  goeval.LLMGenerator
+	llm  api.LLMGenerator
 }
 
 const tonalityPromptTemplate = `You are evaluating the quality of an AI response across multiple dimensions. Be deterministic and concise.
@@ -73,8 +73,8 @@ Instructions:
 - For each dimension, provide: confidence (0.0–1.0), a short explanation (<=30 words), and 1–3 short quotes from the Response as evidence.
 `
 
-func (s *tonalityScorer) Score(ctx context.Context, in goeval.ScoreInputs) goeval.Score {
-	result := goeval.Score{
+func (s *tonalityScorer) Score(ctx context.Context, in api.ScoreInputs) api.Score {
+	result := api.Score{
 		Name:     "Tonality",
 		Metadata: make(map[string]any),
 	}
@@ -148,7 +148,7 @@ func (s *tonalityScorer) Score(ctx context.Context, in goeval.ScoreInputs) goeva
 	// Use StructuredGenerate to get structured response
 	structuredResponse, err := s.llm.StructuredGenerate(ctx, prompt, schema)
 	if err != nil {
-		return s.returnError(&result, fmt.Errorf("%w: %v", goeval.ErrLLMGenerationFailed, err), nil)
+		return s.returnError(&result, fmt.Errorf("LLM generation failed: %v", err), nil)
 	}
 
 	// Extract choices from structured response
@@ -288,7 +288,7 @@ func (s *tonalityScorer) Score(ctx context.Context, in goeval.ScoreInputs) goeva
 }
 
 // returnError is a helper function to set error metadata consistently
-func (s *tonalityScorer) returnError(result *goeval.Score, err error, rawResponse interface{}) goeval.Score {
+func (s *tonalityScorer) returnError(result *api.Score, err error, rawResponse interface{}) api.Score {
 	result.Error = err
 	result.Score = 0
 	result.Metadata["raw_response"] = rawResponse

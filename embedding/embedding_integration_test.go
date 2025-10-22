@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	goeval "github.com/datar-psa/goeval"
+	"github.com/datar-psa/goeval/api"
 	"github.com/datar-psa/goeval/internal/testutils"
 )
 
@@ -74,7 +74,7 @@ func TestEmbeddingSimilarity_Integration(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			scorer := EmbeddingSimilarity(embedder, EmbeddingSimilarityOptions{})
 
-			result := scorer.Score(ctx, goeval.ScoreInputs{Output: tt.output, Expected: tt.expected})
+			result := scorer.Score(ctx, api.ScoreInputs{Output: tt.output, Expected: tt.expected})
 
 			if result.Error != nil {
 				t.Fatalf("EmbeddingSimilarity.Score() unexpected error = %v", result.Error)

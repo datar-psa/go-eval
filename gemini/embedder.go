@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/datar-psa/goeval"
+	"github.com/datar-psa/goeval/api"
 	"google.golang.org/genai"
 )
 
@@ -61,4 +61,4 @@ func (e *Embedder) Embed(ctx context.Context, text string) ([]float64, error) {
 }
 
 // Verify that Embedder implements goeval.Embedder
-var _ goeval.Embedder = (*Embedder)(nil)
+var _ api.Embedder = (*Embedder)(nil)

@@ -1,0 +1,50 @@
+HTTP/2.0 200 OK
+Alt-Svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+Content-Type: application/json; charset=UTF-8
+Date: Wed, 22 Oct 2025 11:38:10 GMT
+Server: scaffolding on HTTPServer2
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "candidates": [
+    {
+      "content": {
+        "role": "model",
+        "parts": [
+          {
+            "text": "{\"choice\": \"A\", \"explanation\": \"The submitted answer \\\"The answer is 4\\\" conveys the exact same factual information as the expert answer \\\"4\\\". The additional phrasing does not introduce new facts or contradict the expert answer, making them factually identical.\"}"
+          }
+        ]
+      },
+      "finishReason": "STOP",
+      "avgLogprobs": -0.71517188332297588
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 346,
+    "candidatesTokenCount": 55,
+    "totalTokenCount": 520,
+    "trafficType": "ON_DEMAND",
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 346
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 55
+      }
+    ],
+    "thoughtsTokenCount": 119
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "createTime": "2025-10-22T11:38:09.678863Z",
+  "responseId": "IcL4aM-3Ke2Y6MEPsZbVwQw"
+}

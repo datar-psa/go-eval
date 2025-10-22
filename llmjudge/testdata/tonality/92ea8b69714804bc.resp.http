@@ -1,0 +1,50 @@
+HTTP/2.0 200 OK
+Alt-Svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+Content-Type: application/json; charset=UTF-8
+Date: Wed, 22 Oct 2025 11:38:39 GMT
+Server: scaffolding on HTTPServer2
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "candidates": [
+    {
+      "content": {
+        "role": "model",
+        "parts": [
+          {
+            "text": "{\n  \"professionalism\": \"E\",\n  \"kindness\": \"E\",\n  \"clarity\": \"B\",\n  \"helpfulness\": \"E\",\n  \"clarity_confidence\": 0.9,\n  \"clarity_evidence\": [\n    \"That's not our problem.\",\n    \"You should have read the terms.\",\n    \"Deal with it.\"\n  ],\n  \"clarity_explanation\": \"The message is very clear, concise, and easy to understand, despite its harsh tone.\",\n  \"helpfulness_confidence\": 1.0,\n  \"helpfulness_evidence\": [\n    \"That's not our problem.\",\n    \"Deal with it.\"\n  ],\n  \"helpfulness_explanation\": \"The response offers no solutions or actionable guidance, completely dismissing the customer's complaint.\",\n  \"kindness_confidence\": 1.0,\n  \"kindness_evidence\": [\n    \"That's not our problem.\",\n    \"Deal with it.\"\n  ],\n  \"kindness_explanation\": \"The tone is dismissive and blaming, showing no empathy or care for the customer's complaint.\",\n  \"professionalism_confidence\": 1.0,\n  \"professionalism_evidence\": [\n    \"That's not our problem.\",\n    \"Deal with it.\"\n  ],\n  \"professionalism_explanation\": \"The response uses confrontational and informal language, completely lacking professionalism.\"\n}"
+          }
+        ]
+      },
+      "finishReason": "STOP",
+      "avgLogprobs": -0.36632323641130227
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 613,
+    "candidatesTokenCount": 317,
+    "totalTokenCount": 1504,
+    "trafficType": "ON_DEMAND",
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 613
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 317
+      }
+    ],
+    "thoughtsTokenCount": 574
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "createTime": "2025-10-22T11:38:34.549921Z",
+  "responseId": "OsL4aKHIIfyO6MEP0IXNwAI"
+}

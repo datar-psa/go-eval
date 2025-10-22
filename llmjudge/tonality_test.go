@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"testing"
 
-	goeval "github.com/datar-psa/goeval"
+	"github.com/datar-psa/goeval/api"
 )
 
 // mockLLMGeneratorRubric is a simple mock for unit tests
@@ -212,7 +212,7 @@ func TestTonality_Unit(t *testing.T) {
 				Threshold:             tt.threshold,
 			})
 
-			result := scorer.Score(ctx, goeval.ScoreInputs{Input: tt.input, Output: tt.output, Expected: tt.expected})
+			result := scorer.Score(ctx, api.ScoreInputs{Input: tt.input, Output: tt.output, Expected: tt.expected})
 
 			if tt.wantErr != nil {
 				if result.Error != tt.wantErr {
@@ -291,7 +291,7 @@ func TestTonality_NoLLM(t *testing.T) {
 	ctx := context.Background()
 
 	scorer := Tonality(nil, TonalityOptions{})
-	result := scorer.Score(ctx, goeval.ScoreInputs{Input: "context", Output: "output", Expected: "expected"})
+	result := scorer.Score(ctx, api.ScoreInputs{Input: "context", Output: "output", Expected: "expected"})
 
 	if result.Error == nil {
 		t.Error("Tonality.Score() expected error when LLM is nil")

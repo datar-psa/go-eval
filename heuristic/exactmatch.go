@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/datar-psa/goeval"
+	"github.com/datar-psa/goeval/api"
 )
 
 // ExactMatchOptions configures the ExactMatch scorer
@@ -16,7 +16,7 @@ type ExactMatchOptions struct {
 }
 
 // ExactMatch returns a scorer that checks if the output exactly matches the expected value
-func ExactMatch(opts ExactMatchOptions) goeval.Scorer {
+func ExactMatch(opts ExactMatchOptions) api.Scorer {
 	return &exactMatchScorer{opts: opts}
 }
 
@@ -24,14 +24,14 @@ type exactMatchScorer struct {
 	opts ExactMatchOptions
 }
 
-func (s *exactMatchScorer) Score(ctx context.Context, in goeval.ScoreInputs) goeval.Score {
-	result := goeval.Score{
+func (s *exactMatchScorer) Score(ctx context.Context, in api.ScoreInputs) api.Score {
+	result := api.Score{
 		Name:     "ExactMatch",
 		Metadata: make(map[string]any),
 	}
 
 	if in.Expected == "" {
-		result.Error = goeval.ErrNoExpectedValue
+		result.Error = api.ErrNoExpectedValue
 		result.Score = 0
 		return result
 	}

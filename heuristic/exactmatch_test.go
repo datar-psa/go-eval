@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/datar-psa/goeval"
+	"github.com/datar-psa/goeval/api"
 )
 
 func TestExactMatch(t *testing.T) {
@@ -81,7 +81,7 @@ func TestExactMatch(t *testing.T) {
 			input:     "What is 2+2?",
 			output:    "4",
 			expected:  "",
-			wantErr:   goeval.ErrNoExpectedValue,
+			wantErr:   api.ErrNoExpectedValue,
 			wantScore: 0.0,
 		},
 	}
@@ -89,7 +89,7 @@ func TestExactMatch(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			scorer := ExactMatch(tt.opts)
-			result := scorer.Score(ctx, goeval.ScoreInputs{Output: tt.output, Expected: tt.expected})
+			result := scorer.Score(ctx, api.ScoreInputs{Output: tt.output, Expected: tt.expected})
 
 			if result.Error != tt.wantErr {
 				t.Errorf("ExactMatch.Score() error = %v, wantErr %v", result.Error, tt.wantErr)

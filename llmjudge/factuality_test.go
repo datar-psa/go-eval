@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/datar-psa/goeval"
+	"github.com/datar-psa/goeval/api"
 )
 
 // mockLLMGenerator is a simple mock for unit tests
@@ -85,7 +85,7 @@ func TestFactuality_Unit(t *testing.T) {
 			input:     "What is 2+2?",
 			output:    "4",
 			expected:  "",
-			wantErr:   goeval.ErrNoExpectedValue,
+			wantErr:   api.ErrNoExpectedValue,
 			wantScore: 0.0,
 		},
 		{
@@ -130,7 +130,7 @@ func TestFactuality_Unit(t *testing.T) {
 			}
 
 			scorer := Factuality(mockLLM, FactualityOptions{})
-			result := scorer.Score(ctx, goeval.ScoreInputs{Input: tt.input, Output: tt.output, Expected: tt.expected})
+			result := scorer.Score(ctx, api.ScoreInputs{Input: tt.input, Output: tt.output, Expected: tt.expected})
 
 			if tt.wantErr != nil {
 				if result.Error != tt.wantErr {
@@ -173,7 +173,7 @@ func TestFactuality_NoLLM(t *testing.T) {
 	ctx := context.Background()
 
 	scorer := Factuality(nil, FactualityOptions{})
-	result := scorer.Score(ctx, goeval.ScoreInputs{Input: "input", Output: "output", Expected: "expected"})
+	result := scorer.Score(ctx, api.ScoreInputs{Input: "input", Output: "output", Expected: "expected"})
 
 	if result.Error == nil {
 		t.Error("Factuality.Score() expected error when LLM is nil")

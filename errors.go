@@ -1,10 +1,8 @@
 package goeval
 
-import "errors"
+import "github.com/datar-psa/goeval/api"
 
 var (
-	// ErrNoExpectedValue is returned when an expected value is required but not provided
-	ErrNoExpectedValue = errors.New("expected value is required for this scorer")
-	// ErrLLMGenerationFailed is returned when LLM generation fails
-	ErrLLMGenerationFailed = errors.New("LLM generation failed")
+	ErrNoExpectedValue     = api.ErrNoExpectedValue
+	ErrLLMGenerationFailed = api.ErrLLMGenerationFailed
 )

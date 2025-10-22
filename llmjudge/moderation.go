@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/datar-psa/goeval"
+	"github.com/datar-psa/goeval/api"
 )
 
 // ModerationOptions configures the Moderation scorer
@@ -17,7 +17,7 @@ type ModerationOptions struct {
 
 // Moderation returns a scorer that evaluates content safety using a moderation provider
 // Returns 1.0 for safe content, 0.0 for unsafe content
-func Moderation(provider goeval.ModerationProvider, opts ModerationOptions) goeval.Scorer {
+func Moderation(provider api.ModerationProvider, opts ModerationOptions) api.Scorer {
 	return &moderationScorer{
 		opts:     opts,
 		provider: provider,
@@ -26,11 +26,11 @@ func Moderation(provider goeval.ModerationProvider, opts ModerationOptions) goev
 
 type moderationScorer struct {
 	opts     ModerationOptions
-	provider goeval.ModerationProvider
+	provider api.ModerationProvider
 }
 
-func (s *moderationScorer) Score(ctx context.Context, in goeval.ScoreInputs) goeval.Score {
-	result := goeval.Score{
+func (s *moderationScorer) Score(ctx context.Context, in api.ScoreInputs) api.Score {
+	result := api.Score{
 		Name:     "Moderation",
 		Metadata: make(map[string]any),
 	}

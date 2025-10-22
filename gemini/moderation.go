@@ -2,113 +2,52 @@ package gemini
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"net/http"
-	"net/url"
-	"strings"
 
-	"github.com/datar-psa/goeval"
+	language "cloud.google.com/go/language/apiv1"
+	languagepb "cloud.google.com/go/language/apiv1/languagepb"
+	"github.com/datar-psa/goeval/api"
 )
 
-// GoogleCloudOptions configures the Google Cloud Natural Language moderation provider
-type GoogleCloudOptions struct {
-	// HTTPClient is used to make requests to Google Cloud Natural Language API
-	HTTPClient *http.Client
-	// ProjectID is the Google Cloud project ID
-	ProjectID string
-	// APIKey is the Google Cloud API key (alternative to service account)
-	APIKey string
+// GoogleLanguageProvider implements ModerationProvider using Google Cloud Natural Language API client
+type GoogleLanguageProvider struct {
+	client *language.Client
 }
 
-// GoogleCloudProvider implements ModerationProvider using Google Cloud Natural Language API
-type GoogleCloudProvider struct {
-	opts GoogleCloudOptions
-}
-
-// NewGoogleCloudProvider creates a new Google Cloud Natural Language moderation provider
-func NewGoogleCloudProvider(opts GoogleCloudOptions) goeval.ModerationProvider {
-	return &GoogleCloudProvider{opts: opts}
+// NewGoogleLanguageProvider creates a new provider using a preconfigured *language.Client (auth handled by caller)
+func NewGoogleLanguageProvider(client *language.Client) api.ModerationProvider {
+	return &GoogleLanguageProvider{client: client}
 }
 
 // Moderate analyzes content for safety using Google Cloud Natural Language API
-func (p *GoogleCloudProvider) Moderate(ctx context.Context, content string) (*goeval.ModerationResult, error) {
-	if p.opts.HTTPClient == nil {
-		return nil, fmt.Errorf("HTTP client is required")
+func (p *GoogleLanguageProvider) Moderate(ctx context.Context, content string) (*api.ModerationResult, error) {
+	if p.client == nil {
+		return nil, fmt.Errorf("language client is required")
 	}
 
-	if p.opts.ProjectID == "" && p.opts.APIKey == "" {
-		return nil, fmt.Errorf("either ProjectID or APIKey is required")
-	}
-
-	// Prepare request body
-	requestBody := map[string]interface{}{
-		"document": map[string]interface{}{
-			"type":    "PLAIN_TEXT",
-			"content": content,
+	req := &languagepb.ModerateTextRequest{
+		Document: &languagepb.Document{
+			Type: languagepb.Document_PLAIN_TEXT,
+			Source: &languagepb.Document_Content{
+				Content: content,
+			},
 		},
 	}
 
-	jsonBody, err := json.Marshal(requestBody)
+	resp, err := p.client.ModerateText(ctx, req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to marshal request body: %w", err)
+		return nil, fmt.Errorf("moderate text failed: %w", err)
 	}
 
-	// Build URL
-	var apiURL string
-	if p.opts.APIKey != "" {
-		apiURL = fmt.Sprintf("https://language.googleapis.com/v1/documents:moderateText?key=%s", url.QueryEscape(p.opts.APIKey))
-	} else {
-		apiURL = "https://language.googleapis.com/v1/documents:moderateText"
-	}
-
-	// Create request
-	req, err := http.NewRequestWithContext(ctx, "POST", apiURL, strings.NewReader(string(jsonBody)))
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
-	}
-
-	req.Header.Set("Content-Type", "application/json; charset=utf-8")
-
-	// Make request
-	resp, err := p.opts.HTTPClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to make request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("API request failed with status %d", resp.StatusCode)
-	}
-
-	// Parse response
-	var apiResponse struct {
-		ModerationCategories []struct {
-			Name       string  `json:"name"`
-			Confidence float64 `json:"confidence"`
-		} `json:"moderationCategories"`
-	}
-
-	if err := json.NewDecoder(resp.Body).Decode(&apiResponse); err != nil {
-		return nil, fmt.Errorf("failed to decode response: %w", err)
-	}
-
-	// Map Google Cloud categories to standardized names
-	categories := make([]goeval.ModerationCategory, 0, len(apiResponse.ModerationCategories))
-
-	for _, category := range apiResponse.ModerationCategories {
-		// Map Google Cloud category names to developer-friendly names
-		standardizedName := mapCategoryName(category.Name)
-
-		categories = append(categories, goeval.ModerationCategory{
-			Name:       standardizedName,
-			Confidence: category.Confidence,
+	categories := make([]api.ModerationCategory, 0, len(resp.ModerationCategories))
+	for _, c := range resp.ModerationCategories {
+		categories = append(categories, api.ModerationCategory{
+			Name:       mapCategoryName(c.Name),
+			Confidence: float64(c.Confidence),
 		})
 	}
 
-	return &goeval.ModerationResult{
-		Categories: categories,
-	}, nil
+	return &api.ModerationResult{Categories: categories}, nil
 }
 
 // mapCategoryName maps Google Cloud Natural Language API category names to developer-friendly names

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/datar-psa/goeval"
+	"github.com/datar-psa/goeval/api"
 )
 
 // FactualityOptions configures the Factuality scorer
@@ -14,7 +14,7 @@ type FactualityOptions struct {
 
 // Factuality returns a scorer that uses an LLM to evaluate if the output is factually consistent with the expected answer
 // This scorer uses chain-of-thought reasoning to determine factuality
-func Factuality(llm goeval.LLMGenerator, opts FactualityOptions) goeval.Scorer {
+func Factuality(llm api.LLMGenerator, opts FactualityOptions) api.Scorer {
 	return &factualityScorer{
 		opts: opts,
 		llm:  llm,
@@ -23,7 +23,7 @@ func Factuality(llm goeval.LLMGenerator, opts FactualityOptions) goeval.Scorer {
 
 type factualityScorer struct {
 	opts FactualityOptions
-	llm  goeval.LLMGenerator
+	llm  api.LLMGenerator
 }
 
 const factualityPromptTemplate = `You are comparing a submitted answer to an expert answer on a given question. Here is the data:
@@ -47,14 +47,14 @@ The submitted answer may either be a subset or superset of the expert answer, or
 
 Provide your assessment with a choice (A, B, C, D, or E) and a detailed explanation of your reasoning.`
 
-func (s *factualityScorer) Score(ctx context.Context, in goeval.ScoreInputs) goeval.Score {
-	result := goeval.Score{
+func (s *factualityScorer) Score(ctx context.Context, in api.ScoreInputs) api.Score {
+	result := api.Score{
 		Name:     "Factuality",
 		Metadata: make(map[string]any),
 	}
 
 	if in.Expected == "" {
-		result.Error = goeval.ErrNoExpectedValue
+		result.Error = api.ErrNoExpectedValue
 		result.Score = 0
 		return result
 	}
@@ -87,7 +87,7 @@ func (s *factualityScorer) Score(ctx context.Context, in goeval.ScoreInputs) goe
 	// Use StructuredGenerate to get structured response
 	structuredResponse, err := s.llm.StructuredGenerate(ctx, prompt, schema)
 	if err != nil {
-		result.Error = fmt.Errorf("%w: %v", goeval.ErrLLMGenerationFailed, err)
+		result.Error = fmt.Errorf("LLM generation failed: %v", err)
 		result.Score = 0
 		return result
 	}

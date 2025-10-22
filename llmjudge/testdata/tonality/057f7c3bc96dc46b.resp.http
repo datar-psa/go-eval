@@ -1,0 +1,50 @@
+HTTP/2.0 200 OK
+Alt-Svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+Content-Type: application/json; charset=UTF-8
+Date: Wed, 22 Oct 2025 11:38:46 GMT
+Server: scaffolding on HTTPServer2
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "candidates": [
+    {
+      "content": {
+        "role": "model",
+        "parts": [
+          {
+            "text": "{\"professionalism\": \"A\", \"kindness\": \"B\", \"clarity\": \"A\", \"helpfulness\": \"C\", \"clarity_confidence\": 1.0, \"clarity_evidence\": [\"Thank you for contacting us.\", \"I'm here to help you with your request and will do my best to resolve this issue.\"], \"clarity_explanation\": \"The response is exceptionally clear, concise, and well-structured as an opening statement, effectively conveying its purpose.\", \"helpfulness_confidence\": 0.9, \"helpfulness_evidence\": [\"Thank you for contacting us.\", \"I'm here to help you with your request\", \"will do my best to resolve this issue.\"], \"helpfulness_explanation\": \"The response addresses the user's contact by acknowledging it and promising help, but provides no immediate actionable steps.\", \"kindness_confidence\": 1.0, \"kindness_evidence\": [\"Thank you for contacting us.\", \"I'm here to help you\", \"will do my best to resolve this issue.\"], \"kindness_explanation\": \"The response is empathetic and supportive, expressing willingness to help and resolve the issue.\", \"professionalism_confidence\": 1.0, \"professionalism_evidence\": [\"Thank you for contacting us.\", \"I'm here to help you with your request\", \"will do my best to resolve this issue.\"], \"professionalism_explanation\": \"The response is highly professional, precise, and neutral in tone, serving as an excellent opening statement.\"}"
+          }
+        ]
+      },
+      "finishReason": "STOP",
+      "avgLogprobs": -0.58268713417906348
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 618,
+    "candidatesTokenCount": 313,
+    "totalTokenCount": 1740,
+    "trafficType": "ON_DEMAND",
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 618
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 313
+      }
+    ],
+    "thoughtsTokenCount": 809
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "createTime": "2025-10-22T11:38:39.766395Z",
+  "responseId": "P8L4aLvjLu2Y6MEPsZbVwQw"
+}

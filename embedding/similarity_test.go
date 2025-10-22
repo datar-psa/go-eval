@@ -6,7 +6,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/datar-psa/goeval"
+	"github.com/datar-psa/goeval/api"
 )
 
 // mockEmbedder is a simple mock for unit tests
@@ -87,7 +87,7 @@ func TestEmbeddingSimilarity_Unit(t *testing.T) {
 			name:         "no expected value",
 			output:       "hello",
 			expected:     "",
-			wantErr:      goeval.ErrNoExpectedValue,
+			wantErr:      api.ErrNoExpectedValue,
 			wantMinScore: 0.0,
 			wantMaxScore: 0.0,
 		},
@@ -110,7 +110,7 @@ func TestEmbeddingSimilarity_Unit(t *testing.T) {
 
 			scorer := EmbeddingSimilarity(mockEmbed, EmbeddingSimilarityOptions{})
 
-			result := scorer.Score(ctx, goeval.ScoreInputs{Output: tt.output, Expected: tt.expected})
+			result := scorer.Score(ctx, api.ScoreInputs{Output: tt.output, Expected: tt.expected})
 
 			if tt.wantErr != nil {
 				if result.Error != tt.wantErr {
@@ -141,7 +141,7 @@ func TestEmbeddingSimilarity_NoEmbedder(t *testing.T) {
 	ctx := context.Background()
 
 	scorer := EmbeddingSimilarity(nil, EmbeddingSimilarityOptions{})
-	result := scorer.Score(ctx, goeval.ScoreInputs{Output: "output", Expected: "expected"})
+	result := scorer.Score(ctx, api.ScoreInputs{Output: "output", Expected: "expected"})
 
 	if result.Error == nil {
 		t.Error("EmbeddingSimilarity.Score() expected error when Embedder is nil")

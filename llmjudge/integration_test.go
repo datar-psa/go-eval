@@ -5,9 +5,11 @@ import (
 	"os"
 	"testing"
 
-	goeval "github.com/datar-psa/goeval"
+	language "cloud.google.com/go/language/apiv1"
+	"github.com/datar-psa/goeval/api"
 	"github.com/datar-psa/goeval/gemini"
 	"github.com/datar-psa/goeval/internal/testutils"
+	"google.golang.org/api/option"
 )
 
 // TestFactuality_Integration tests the Factuality scorer with real Gemini API calls
@@ -67,7 +69,7 @@ func TestFactuality_Integration(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			scorer := Factuality(llmGen, FactualityOptions{})
-			result := scorer.Score(ctx, goeval.ScoreInputs{Input: tt.input, Output: tt.output, Expected: tt.expected})
+			result := scorer.Score(ctx, api.ScoreInputs{Input: tt.input, Output: tt.output, Expected: tt.expected})
 
 			if result.Error != nil {
 				t.Fatalf("Factuality.Score() unexpected error = %v", result.Error)
@@ -194,7 +196,7 @@ func TestTonality_Integration(t *testing.T) {
 				ProfessionalismWeight: tt.professionalismWeight,
 				KindnessWeight:        tt.kindnessWeight,
 			})
-			result := scorer.Score(ctx, goeval.ScoreInputs{Input: tt.input, Output: tt.output, Expected: tt.expected})
+			result := scorer.Score(ctx, api.ScoreInputs{Input: tt.input, Output: tt.output, Expected: tt.expected})
 
 			if result.Error != nil {
 				t.Fatalf("Tonality.Score() unexpected error = %v", result.Error)
@@ -243,11 +245,15 @@ func TestModeration_Integration(t *testing.T) {
 		SubDir:      "moderation",
 	}, os.Getenv("GOOGLE_PROJECT_ID"))
 
+	// Create Google Cloud Natural Language client with HTTP transport
+	langClient, err := language.NewRESTClient(ctx,
+		option.WithHTTPClient(httpClient),
+	)
+	if err != nil {
+		t.Fatalf("failed to create language client: %v", err)
+	}
 	// Create Google Cloud Natural Language provider
-	provider := gemini.NewGoogleCloudProvider(gemini.GoogleCloudOptions{
-		HTTPClient: httpClient,
-		ProjectID:  os.Getenv("GOOGLE_PROJECT_ID"),
-	})
+	provider := gemini.NewGoogleLanguageProvider(langClient)
 
 	tests := []struct {
 		name        string
@@ -334,7 +340,7 @@ func TestModeration_Integration(t *testing.T) {
 				Threshold:  tt.threshold,
 				Categories: tt.categories,
 			})
-			result := scorer.Score(ctx, goeval.ScoreInputs{Output: tt.output, Expected: tt.expected})
+			result := scorer.Score(ctx, api.ScoreInputs{Output: tt.output, Expected: tt.expected})
 
 			if result.Error != nil {
 				t.Fatalf("Moderation.Score() unexpected error = %v", result.Error)

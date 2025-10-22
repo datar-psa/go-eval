@@ -1,9 +1,0 @@
-POST https://us-central1-aiplatform.googleapis.com/v1beta1/projects/datar-testing/locations/us-central1/publishers/google/models/text-embedding-005:predict HTTP/1.1
-Host: us-central1-aiplatform.googleapis.com
-User-Agent: google-genai-sdk/1.31.0 gl-go/go1.25.2
-Content-Length: 57
-Authorization: SANITIZED
-Content-Type: application/json
-X-Goog-Api-Client: google-genai-sdk/1.31.0 gl-go/go1.25.2
-
-{"instances":[{"content":"What is the weather today?"}]}

@@ -1,0 +1,50 @@
+HTTP/2.0 200 OK
+Alt-Svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+Content-Type: application/json; charset=UTF-8
+Date: Wed, 22 Oct 2025 11:38:21 GMT
+Server: scaffolding on HTTPServer2
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "candidates": [
+    {
+      "content": {
+        "role": "model",
+        "parts": [
+          {
+            "text": "{\"professionalism\": \"A\", \"kindness\": \"A\", \"clarity\": \"A\", \"helpfulness\": \"C\", \"clarity_confidence\": 1.0, \"clarity_evidence\": [\"I sincerely apologize for the delay in your order.\", \"I understand how frustrating this must be.\", \"Please let me know if there's anything else I can do to help.\"], \"clarity_explanation\": \"The response is exceptionally clear, concise, and logically structured.\", \"helpfulness_confidence\": 1.0, \"helpfulness_evidence\": [\"I sincerely apologize for the delay in your order.\", \"we're working to resolve this issue immediately.\", \"Please let me know if there's anything else I can do to help.\"], \"helpfulness_explanation\": \"The response acknowledges the issue and offers general help, but lacks specific actionable steps or details about the resolution.\", \"kindness_confidence\": 1.0, \"kindness_evidence\": [\"I sincerely apologize for the delay in your order.\", \"I understand how frustrating this must be.\", \"Please let me know if there's anything else I can do to help.\"], \"kindness_explanation\": \"The response demonstrates strong empathy, understanding, and offers support to the customer.\", \"professionalism_confidence\": 1.0, \"professionalism_evidence\": [\"I sincerely apologize for the delay in your order.\", \"I want to assure you that we're working to resolve this issue immediately.\"], \"professionalism_explanation\": \"The language used is consistently professional, polite, and reassuring.\"}"
+          }
+        ]
+      },
+      "finishReason": "STOP",
+      "avgLogprobs": -0.55919448189113452
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 646,
+    "candidatesTokenCount": 322,
+    "totalTokenCount": 1861,
+    "trafficType": "ON_DEMAND",
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 646
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 322
+      }
+    ],
+    "thoughtsTokenCount": 893
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "createTime": "2025-10-22T11:38:15.350406Z",
+  "responseId": "J8L4aMaxFeG16MEPq9e1kAY"
+}

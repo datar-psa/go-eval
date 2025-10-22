@@ -1,0 +1,50 @@
+HTTP/2.0 200 OK
+Alt-Svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+Content-Type: application/json; charset=UTF-8
+Date: Wed, 22 Oct 2025 11:38:29 GMT
+Server: scaffolding on HTTPServer2
+Vary: Origin
+Vary: X-Origin
+Vary: Referer
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 0
+
+{
+  "candidates": [
+    {
+      "content": {
+        "role": "model",
+        "parts": [
+          {
+            "text": "{\n  \"professionalism\": \"B\",\n  \"kindness\": \"C\",\n  \"clarity\": \"B\",\n  \"helpfulness\": \"C\",\n  \"clarity_confidence\": 0.9,\n  \"clarity_evidence\": [\n    \"Your order has been delayed due to shipping issues.\",\n    \"We are processing your request and will update you when resolved.\"\n  ],\n  \"clarity_explanation\": \"The response clearly states the reason for delay and the next step of action from their side. It is concise and easy to understand.\",\n  \"helpfulness_confidence\": 0.8,\n  \"helpfulness_evidence\": [\n    \"Your order has been delayed due to shipping issues.\",\n    \"We are processing your request and will update you when resolved.\"\n  ],\n  \"helpfulness_explanation\": \"The response addresses the delay and states a next step, but lacks specific details, a timeline, or proactive solutions, offering limited actionability to the customer.\",\n  \"kindness_confidence\": 0.9,\n  \"kindness_evidence\": [\n    \"Your order has been delayed due to shipping issues.\",\n    \"We are processing your request and will update you when resolved.\"\n  ],\n  \"kindness_explanation\": \"The tone is neutral and polite. It explains the situation without showing strong empathy or offering further support.\",\n  \"professionalism_confidence\": 0.9,\n  \"professionalism_evidence\": [\n    \"Your order has been delayed due to shipping issues.\",\n    \"We are processing your request and will update you when resolved.\"\n  ],\n  \"professionalism_explanation\": \"The response is precise and neutral, maintaining a professional tone without any informality or sloppiness. It directly addresses the issue.\"\n}"
+          }
+        ]
+      },
+      "finishReason": "STOP",
+      "avgLogprobs": -0.70189607452234459
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 617,
+    "candidatesTokenCount": 386,
+    "totalTokenCount": 1751,
+    "trafficType": "ON_DEMAND",
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 617
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 386
+      }
+    ],
+    "thoughtsTokenCount": 748
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "createTime": "2025-10-22T11:38:21.988253Z",
+  "responseId": "LcL4aN2oPO2Y6MEPsZbVwQw"
+}

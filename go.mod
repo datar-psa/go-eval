@@ -3,8 +3,18 @@ module github.com/datar-psa/goeval
 go 1.25.2
 
 require (
+	cloud.google.com/go/language v1.14.6
 	github.com/areknoster/hypert v0.51.0
 	google.golang.org/genai v1.31.0
+)
+
+require (
+	cloud.google.com/go/auth/oauth2adapt v0.2.8 // indirect
+	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.63.0 // indirect
+	golang.org/x/sync v0.17.0 // indirect
+	golang.org/x/time v0.14.0 // indirect
+	google.golang.org/api v0.252.0 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20251020155222-88f65dc88635 // indirect
 )
 
 require (
@@ -29,7 +39,7 @@ require (
 	golang.org/x/oauth2 v0.32.0
 	golang.org/x/sys v0.37.0 // indirect
 	golang.org/x/text v0.30.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20251014184007-4626949a642f // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20251020155222-88f65dc88635 // indirect
 	google.golang.org/grpc v1.76.0 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
 )

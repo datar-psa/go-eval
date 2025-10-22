@@ -25,19 +25,25 @@ import (
     "context"
     "fmt"
 
-    goeval "github.com/datar-psa/goeval"
-    "github.com/datar-psa/goeval/gemini"
+    "github.com/datar-psa/goeval"
     "github.com/datar-psa/goeval/llmjudge"
+    "google.golang.org/genai"
 )
 
 func main() {
     ctx := context.Background()
 
-    // Create LLM generator (Vertex AI Gemini shown as an example)
-    gen := gemini.NewGenerator(genaiClient, "publishers/google/models/gemini-2.5-flash")
+    // Create Gemini client
+    genaiClient, _ := genai.NewClient(ctx, &genai.ClientConfig{ /* Your config */ })
 
-    // Create the Factuality scorer
-    scorer := llmjudge.Factuality(gen, llmjudge.FactualityOptions{})
+    // Create Judge wrapper with functional options
+    judge := goeval.NewGeminiLLMJudge(
+        goeval.WithGenaiClient(genaiClient),
+        goeval.WithModelName("publishers/google/models/gemini-2.5-flash"),
+    )
+
+    // Create the Factuality scorer without passing LLM each time
+    scorer := judge.Factuality(goeval.FactualityOptions{})
 
     // Score the model output against an expected answer, with the original question as input
     result := scorer.Score(ctx, goeval.ScoreInputs{
@@ -91,11 +97,14 @@ Semantic similarity using vector embeddings.
 
 ### 1) FAQ Answer Accuracy (Factuality)
 
-Evaluate if an assistant’s answer matches a knowledge base answer.
+Evaluate if an assistant's answer matches a knowledge base answer.
 
 ```go
-scorer := llmjudge.Factuality(gen, llmjudge.FactualityOptions{})
-res := scorer.Score(ctx, goeval.ScoreInputs{
+judge := goeval.NewGeminiLLMJudge(
+    goeval.WithGenaiClient(genaiClient),
+    goeval.WithModelName("publishers/google/models/gemini-2.5-flash"),
+)
+res := judge.Factuality(goeval.FactualityOptions{}).Score(ctx, goeval.ScoreInputs{
     Input:    "What are store hours on Sundays?",
     Output:   "We're open 10am–6pm on Sundays.",
     Expected: "We are open from 10:00 to 18:00 on Sundays.",
@@ -108,7 +117,11 @@ res := scorer.Score(ctx, goeval.ScoreInputs{
 Enforce minimum tone quality across all dimensions with a threshold gate.
 
 ```go
-tonality := llmjudge.Tonality(gen, llmjudge.TonalityOptions{
+judge := goeval.NewGeminiLLMJudge(
+    goeval.WithGenaiClient(genaiClient),
+    goeval.WithModelName("publishers/google/models/gemini-2.5-flash"),
+)
+tonality := judge.Tonality(goeval.TonalityOptions{
     ProfessionalismWeight: 0.25,
     KindnessWeight:        0.25,
     ClarityWeight:         0.25,
@@ -118,7 +131,7 @@ tonality := llmjudge.Tonality(gen, llmjudge.TonalityOptions{
 
 res := tonality.Score(ctx, goeval.ScoreInputs{
     Input:  "Customer complaint about delayed shipment",
-    Output: "I’m sorry for the delay — here’s what we’re doing next...",
+    Output: "I'm sorry for the delay — here's what we're doing next...",
 })
 // res.Metadata contains per-dimension choices/scores and applied weights
 ```
@@ -128,13 +141,18 @@ res := tonality.Score(ctx, goeval.ScoreInputs{
 Block unsafe replies and steer away from sensitive topics (e.g., religion/politics).
 
 ```go
-provider := gemini.NewGoogleCloudProvider(gemini.GoogleCloudOptions{ /* http client + project */ })
-moderation := llmjudge.Moderation(provider, llmjudge.ModerationOptions{
+// Create Google Cloud Language client
+langClient, _ := language.NewRESTClient(ctx)
+
+judge := goeval.NewGeminiLLMJudge(
+    goeval.WithLanguageClient(langClient),
+)
+moderation := judge.Moderation(goeval.ModerationOptions{
     Threshold:  0.5,
     Categories: []string{"Toxic", "Derogatory", "Violent", "Insult", "ReligionBelief", "Politics"},
 })
 
-res := moderation.Score(ctx, goeval.ScoreInputs{Output: "Let’s discuss your religion and political views..."})
+res := moderation.Score(ctx, goeval.ScoreInputs{Output: "Let's discuss your religion and political views..."})
 // res.Score = 0.0 if unsafe; metadata includes flagged categories and is_safe=false
 ```
 
@@ -143,18 +161,65 @@ res := moderation.Score(ctx, goeval.ScoreInputs{Output: "Let’s discuss your re
 Group similar user requests or route to the right workflow.
 
 ```go
-sim := embedding.EmbeddingSimilarity(embedding.EmbeddingSimilarityOptions{Embedder: embedder})
+// Create embedding scorer
+embedding := goeval.NewGeminiEmbedding(
+    goeval.WithGenaiClient(genaiClient),
+    goeval.WithModelName("text-embedding-005"),
+)
+sim := embedding.Similarity(goeval.EmbeddingSimilarityOptions{})
+
 res := sim.Score(ctx, goeval.ScoreInputs{
     Output:   "Reset my password",
-    Expected: "I can’t log in to my account",
+    Expected: "I can't log in to my account",
 })
 // Higher scores indicate closer semantic intent
 ```
 
-## Running Tests
+### 5) Exact Match Validation (Heuristic)
+
+Fast validation for exact matches with configurable options.
+
+```go
+// Create heuristic scorer
+heuristic := goeval.NewHeuristic()
+exactMatch := heuristic.ExactMatch(goeval.ExactMatchOptions{
+    CaseSensitive: false,
+    TrimWhitespace: true,
+})
+
+res := exactMatch.Score(ctx, goeval.ScoreInputs{
+    Output:   "Paris",
+    Expected: "paris",
+})
+// res.Score = 1.0 for exact match (case-insensitive)
+```
+
+## Design Philosophy
+
+The library is designed with flexibility and composability in mind:
+
+- **Client-First Approach**: We accept pre-configured clients (like `*genai.Client`, `*language.Client`) rather than raw credentials or project IDs. This gives you complete control over authentication, retry policies, and other client configurations.
+
+- **Functional Options Pattern**: All constructors use functional options for clean, extensible APIs that grow gracefully over time.
+
+- **Pluggable Providers**: The scoring interfaces are designed to be implemented by any provider, making it easy to add support for new LLM providers or evaluation services.
+
+## Development
+
+### Running Tests
 
 ```bash
 go test -short              # Unit tests only
 go test                     # All tests
 UPDATE_TESTS=true go test   # Update integration test cache (LLM requests)
 ```
+
+### Request Caching
+
+Currently we're using [hypert](https://github.com/areknoster/hypert) to cache LLM requests. The library's integration tests already demonstrate this pattern.
+
+### Roadmap
+
+- **More Scorers**: Additional evaluation methods
+- **Request Caching**: Built-in caching layer for LLM requests (currently one option is hypert)
+- **OpenAI Provider**: Native support for OpenAI's GPT models alongside Google Gemini
